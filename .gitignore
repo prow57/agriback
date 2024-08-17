@@ -1,3 +1,36 @@
-node_modules
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
 
-dist
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+#secret
+agriassist.json
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+
+# IDEs
+.vscode/
+.idea/
+
+# Built files
+dist/
+build/
+
+dataset
+
+inference.py
+
+python-scripts/inference.py
+.vercel
