@@ -37,23 +37,23 @@ router.post('/generate-full-course', async (req, res) => {
     - Objectives
     - Introduction
     - Content with well-outlined sections and easy-to-understand explanations with examples
-    - For practical lessons, specify all tools needed and include descriptions for images
+    - For practical lessons, specify all tools needed and include descriptions
     - Conclusion
-    - References
+    - References which must include links.
   `;
 
   try {
     const content = await generateText(prompt);
 
     // If practical lessons are included, generate images
-    let images = [];
-    if (content.toLowerCase().includes('tools needed')) {
-      const imageDescription = `Tools needed for ${title} in ${category}`;
-      const imageUrl = await generateImage(imageDescription);
-      images.push(imageUrl);
-    }
+    //let images = [];
+   // if (content.toLowerCase().includes('tools needed')) {
+     // const imageDescription = `Tools needed for ${title} in ${category}`;
+      //const imageUrl = await generateImage(imageDescription);
+      //images.push(imageUrl);
+    //}
 
-    res.json({ title, description, content, images });
+    res.json({ title, description, content });
   } catch (error) {
     res.status(500).json({ error: 'Error generating full course content.' });
   }
@@ -61,7 +61,7 @@ router.post('/generate-full-course', async (req, res) => {
 
 // Save course to Firestore
 router.post('/save-course', async (req, res) => {
-  const { category, title, description, content, images } = req.body;
+  const { category, title, description, content} = req.body;
 
   try {
     const docRef = await db.collection('courses').add({
@@ -69,7 +69,6 @@ router.post('/save-course', async (req, res) => {
       title,
       description,
       content,
-      images,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     res.json({ message: 'Course saved successfully.', id: docRef.id });
