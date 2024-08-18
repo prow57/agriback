@@ -5,15 +5,15 @@ const cors = require('cors');
 const admin = require('firebase-admin');
 require('dotenv').config();
 
-const courseRoutes = require('./routes/courseRoutes');
-const adviceRoutes = require('./routes/adviceRoutes');
-const chatbotRoutes = require('./routes/chatbotRoutes');
+const courseRoutes = require('./src/routes/courseRoutes');
+const adviceRoutes = require('./src/routes/adviceRoutes');
+const chatRoutes = require('./src/routes/chatRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Initialize Firebase Admin SDK
-const serviceAccount = require('../firebaseServiceAccountKey.json');
+const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -26,7 +26,7 @@ app.use(express.json());
 // Routes
 app.use('/api/courses', courseRoutes);
 app.use('/api/advice', adviceRoutes);
-app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Default route
 app.get('/', (req, res) => {
