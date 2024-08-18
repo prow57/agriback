@@ -47,6 +47,21 @@ router.post('/generate-course-topic', async (req, res) => {
   }
 });
 
+// Get a list of all topics from database
+
+router.get('/topics', async (req, res) => {
+  try {
+    const coursesSnapshot = await db.collection('topics').get();
+    const courses = [];
+    coursesSnapshot.forEach(doc => {
+      courses.push({ id: doc.id, ...doc.data() });
+    });
+    res.json(courses);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching courses.' });
+  }
+});
+
 
 // Generate full course content
 router.post('/generate-full-course', async (req, res) => {
