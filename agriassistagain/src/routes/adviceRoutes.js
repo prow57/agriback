@@ -19,8 +19,7 @@ router.post('/get-advice', async (req, res) => {
     - Identification of possible causes
     - Step-by-step instructions to address the issues
     - Recommendations for improving overall health and yield
-    -Any extra link for more info if needed
-    
+    - Any extra links for more info if needed
   `;
 
   try {
