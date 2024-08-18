@@ -1,40 +1,38 @@
 // src/services/llamaAIService.js
 
-const axios = require('axios');
+const Groq = require("groq-sdk");
+
 require('dotenv').config();
 
-const LLAMA_AI_API_KEY = process.env.LLAMA_AI_API_KEY;
-const LLAMA_AI_API_URL = process.env.LLAMA_AI_API_URL;
-
-const axiosInstance = axios.create({
-  baseURL: LLAMA_AI_API_URL,
-  headers: {
-    'Authorization': `Bearer ${LLAMA_AI_API_KEY}`,
-    'Content-Type': 'application/json',
-  },
-});
+const groq = new Groq({ apiKey: process.env.LLAMA_AI_API_KEY });
 
 const generateText = async (prompt) => {
   try {
-    const response = await axiosInstance.post('/generate-text', {
-      prompt,
-      max_tokens: 1500,
+    const response = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      model: "llama3-8b-8192",  // Adjust the model as per your requirement
     });
-    return response.data.text;
+
+    return response.choices[0]?.message?.content || "";
   } catch (error) {
-    console.error('Error generating text:', error.response.data);
+    console.error('Error generating text:', error);
     throw error;
   }
 };
 
 const generateImage = async (description) => {
+  // Since Groq SDK example doesn't cover image generation, assume it's handled similarly.
+  // Replace with the correct Groq method for image generation if available.
   try {
-    const response = await axiosInstance.post('/generate-image', {
-      description,
-    });
+    const response = await groq.image.generate({ description });
     return response.data.image_url;
   } catch (error) {
-    console.error('Error generating image:', error.response.data);
+    console.error('Error generating image:', error);
     throw error;
   }
 };
