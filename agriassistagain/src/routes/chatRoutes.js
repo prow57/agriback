@@ -5,7 +5,7 @@ const router = express.Router();
 const { generateText } = require('../services/llamaAIService');
 
 // Chatbot endpoint
-router.post('/chatbot', async (req, res) => {
+router.post('/chat', async (req, res) => {
   const { message } = req.body;
 
   const prompt = `
