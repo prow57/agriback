@@ -38,9 +38,8 @@ router.post('/generate-full-course', async (req, res) => {
     - Introduction
     - Content with well-outlined sections and easy-to-understand explanations with examples
     - For practical lessons, specify all tools needed and include descriptions for images
-    - examples
     - Conclusion
-    -references
+    - References
   `;
 
   try {
