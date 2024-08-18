@@ -11,7 +11,7 @@ const db = admin.firestore();
 router.post('/generate-course-topic', async (req, res) => {
   const { category } = req.body;
 
-  const prompt = `Generate a lesson topic and description for the category: ${category} in agriculture.`;
+  const prompt = `Generate a topic and description for a lesson in the category: ${category} in agriculture. Just provide the topic and discription don't say anything more.`;
 
   try {
     const result = await generateText(prompt);
@@ -33,7 +33,7 @@ router.post('/generate-full-course', async (req, res) => {
     Title: ${title}
     Description: ${description}
     
-    The lesson should include:
+    The lesson should be include:
     - Objectives
     - Introduction
     - Content with well-outlined sections and easy-to-understand explanations with examples
