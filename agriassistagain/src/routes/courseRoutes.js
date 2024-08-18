@@ -25,13 +25,28 @@ router.post('/generate-course-topic', async (req, res) => {
     const descriptionResult = await generateText(descriptionPrompt);
     const description = descriptionResult.trim();  // Assume the description is the whole output
 
-    // Return the generated title and description
-    res.json({ title, description });
+    // Step 3: Save the generated title and description to the database
+    try {
+      const docRef = await db.collection('topics').add({
+        category,
+        title,
+        description,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      
+      // Return the generated title, description, and the document ID
+      res.json({ title, description, id: docRef.id });
+
+    } catch (dbError) {
+      console.error('Error saving course topic and description:', dbError);
+      res.status(500).json({ error: 'Error saving course topic and description to the database.' });
+    }
 
   } catch (error) {
     res.status(500).json({ error: 'Error generating course topic and description.' });
   }
 });
+
 
 // Generate full course content
 router.post('/generate-full-course', async (req, res) => {
