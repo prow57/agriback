@@ -144,6 +144,21 @@ router.post('/generate-full-course', async (req, res) => {
   }
 });
 
+// src/routes/courseRoutes.js
+router.get('/courses', async (req, res) => {
+  try {
+    const coursesSnapshot = await db.collection('courses').get();
+    const courses = [];
+    coursesSnapshot.forEach(doc => {
+      courses.push({ id: doc.id, ...doc.data() });
+    });
+    res.json(courses);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching courses.' });
+  }
+});
+
+
 // Save course to Firestore
 router.post('/save-course', async (req, res) => {
   const { category, title, description, content} = req.body;
