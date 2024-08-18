@@ -11,7 +11,7 @@ const db = admin.firestore();
 router.post('/generate-course-topic', async (req, res) => {
   const { category } = req.body;
 
-  const prompt = `Generate a topic and description for a lesson in the category: ${category} in agriculture.`;
+  const prompt = `Generate a topic and description for a lesson in the category: ${category} in agriculture. Just provide the title and description separated by a delimiter don't say anything more`;
 
   try {
     const result = await generateText(prompt);
