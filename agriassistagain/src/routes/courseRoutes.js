@@ -16,9 +16,9 @@ router.post('/generate-course-topic', async (req, res) => {
   try {
     const result = await generateText(prompt);
     // Assuming the result returns topic and description separated by a delimiter
-    //const [title, description] = result.split('\n', 2);
-    //res.json({ title: title.trim(), description: description.trim() });
-    res.json({title, description});
+    const [title, description] = result.split('\n', 2);
+    res.json({ title: title.trim(), description: description.trim() });
+    //res.json({title, description});
   } catch (error) {
     res.status(500).json({ error: 'Error generating course topic and description.' });
   }
