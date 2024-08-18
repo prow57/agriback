@@ -28,7 +28,7 @@ app.use('/api/chat', chatRoutes);
 
 // Default route
 app.get('/', (req, res) => {
-  res.send('Agriculture Backend API is running');
+  res.send('Agri-Assist-AI Backend API is running');
 });
 
 // Start server
