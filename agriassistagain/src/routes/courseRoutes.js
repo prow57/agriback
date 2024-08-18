@@ -11,14 +11,23 @@ const db = admin.firestore();
 router.post('/generate-course-topic', async (req, res) => {
   const { category } = req.body;
 
-  const prompt = `Generate a topic and description for a lesson in the category: ${category} in agriculture. Just provide the title and description separated by a delimiter don't say anything more`;
+  // Step 1: Generate the lesson title based on the category
+  const titlePrompt = `Generate a topic for a lesson in the category: ${category} in agriculture. Just provide the title, don't say anything more.`;
 
   try {
-    const result = await generateText(prompt);
-    // Assuming the result returns topic and description separated by a delimiter
-    const [title, description] = result.split('\n', 2);
-    res.json({ title: title.trim(), description: description.trim() });
-    //res.json({title, description});
+    // Generate the title
+    const titleResult = await generateText(titlePrompt);
+    const title = titleResult.trim();  // Assume the title is the whole output
+
+    // Step 2: Generate the description based on the title
+    const descriptionPrompt = `Write a brief introduction to the topic: "${title}". Summarize what the topic is about in agriculture.`;
+
+    const descriptionResult = await generateText(descriptionPrompt);
+    const description = descriptionResult.trim();  // Assume the description is the whole output
+
+    // Return the generated title and description
+    res.json({ title, description });
+
   } catch (error) {
     res.status(500).json({ error: 'Error generating course topic and description.' });
   }
