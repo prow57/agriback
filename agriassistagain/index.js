@@ -2,7 +2,9 @@
 
 const express = require('express');
 const cors = require('cors');
-const admin = require('firebase-admin');
+const admin = require("firebase-admin");
+const db = require("./db");
+
 require('dotenv').config();
 
 const courseRoutes = require('./src/routes/courseRoutes');
@@ -13,11 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Initialize Firebase Admin SDK
-const serviceAccount = require('./serviceAccountKey.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
 
 // Middleware
 app.use(cors());
