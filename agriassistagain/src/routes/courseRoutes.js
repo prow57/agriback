@@ -63,6 +63,51 @@ router.get('/topics', async (req, res) => {
 });
 
 
+// Generate full course content based on the course ID and save it
+router.post('/generate-full-course/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const courseDoc = await db.collection('topics').doc(id).get();
+
+    if (!courseDoc.exists) {
+      return res.status(404).json({ error: 'Course not found.' });
+    }
+
+    const courseData = courseDoc.data();
+    const { title, description, category } = courseData;
+
+    const prompt = `
+      Generate a detailed lesson for the following:
+      Category: ${category}
+      Title: ${title}
+      Description: ${description}
+      
+      The lesson should include:
+      - Objectives
+      - Introduction
+      - Content with well-outlined sections and easy-to-understand explanations with examples
+      - For practical lessons, specify all tools needed and include descriptions
+      - Conclusion
+      - References which must include links.
+    `;
+
+    const content = await generateText(prompt);
+
+    // Optionally save the generated content
+    await db.collection('courses').doc(id).update({
+      content,
+    });
+
+    res.json({ title, description, content });
+
+  } catch (error) {
+    res.status(500).json({ error: 'Error generating full course content.' });
+  }
+});
+
+
+
 // Generate full course content
 router.post('/generate-full-course', async (req, res) => {
   const { title, description, category } = req.body;
