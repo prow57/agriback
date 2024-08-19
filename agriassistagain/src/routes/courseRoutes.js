@@ -17,13 +17,12 @@ router.post('/generate-course-topic', async (req, res) => {
   try {
     // Generate the title
     const titleResult = await generateText(titlePrompt);
-    const title = titleResult.trim();  // Assume the title is the whole output
+    const title = titleResult.trim(); // Assume the title is the whole output
 
     // Step 2: Generate the description based on the title
     const descriptionPrompt = `Write a brief introduction to the topic: "${title}" in summary in agriculture.`;
-
     const descriptionResult = await generateText(descriptionPrompt);
-    const description = descriptionResult.trim();  // Assume the description is the whole output
+    const description = descriptionResult.trim(); // Assume the description is the whole output
 
     // Step 3: Save the generated title and description to the database
     try {
@@ -33,22 +32,19 @@ router.post('/generate-course-topic', async (req, res) => {
         description,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-      
+
       // Return the generated title, description, and the document ID
       res.json({ title, description, id: docRef.id });
-
     } catch (dbError) {
       console.error('Error saving course topic and description:', dbError);
       res.status(500).json({ error: 'Error saving course topic and description to the database.' });
     }
-
   } catch (error) {
     res.status(500).json({ error: 'Error generating course topic and description.' });
   }
 });
 
-// Get a list of all topics from database
-
+// Get a list of all topics from the database
 router.get('/topics', async (req, res) => {
   try {
     const coursesSnapshot = await db.collection('topics').get();
@@ -85,7 +81,6 @@ router.get('/random-topics', async (req, res) => {
   }
 });
 
-
 // Generate full course content based on the course ID and save it
 router.post('/generate-full-course/:id', async (req, res) => {
   const { id } = req.params;
@@ -94,7 +89,7 @@ router.post('/generate-full-course/:id', async (req, res) => {
     const topicDoc = await db.collection('topics').doc(id).get();
 
     if (!topicDoc.exists) {
-      return res.status(404).json({ error: 'Topics not found.' });
+      return res.status(404).json({ error: 'Topic not found.' });
     }
 
     const topicData = topicDoc.data();
@@ -117,27 +112,27 @@ router.post('/generate-full-course/:id', async (req, res) => {
 
     const content = await generateText(prompt);
 
-    // Optionally save the generated content
+    // Save the generated content to Firestore
     try {
       const docRef = await db.collection('courses').add({
+        category,
+        title,
+        description,
         content,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-    
-      
-      // Return the generated title, description, and the document ID
-    
 
-      res.json({ category, title, description, content, id: docRef.id});
-
+      // Return the generated title, category, description, and content
+      res.json({ category, title, description, content, id: docRef.id });
+    } catch (dbError) {
+      res.status(500).json({ error: 'Error saving course content to the database.' });
+    }
   } catch (error) {
     res.status(500).json({ error: 'Error generating full course content.' });
   }
 });
 
-
-
-// Generate full course content
+// Generate full course content based on title, description, and category
 router.post('/generate-full-course', async (req, res) => {
   const { title, description, category } = req.body;
 
@@ -147,7 +142,7 @@ router.post('/generate-full-course', async (req, res) => {
     Title: ${title}
     Description: ${description}
     
-    The lesson should be include:
+    The lesson should include:
     - Objectives
     - Introduction
     - Content with well-outlined sections and easy-to-understand explanations with examples
@@ -159,21 +154,14 @@ router.post('/generate-full-course', async (req, res) => {
   try {
     const content = await generateText(prompt);
 
-    // If practical lessons are included, generate images
-    //let images = [];
-   // if (content.toLowerCase().includes('tools needed')) {
-     // const imageDescription = `Tools needed for ${title} in ${category}`;
-      //const imageUrl = await generateImage(imageDescription);
-      //images.push(imageUrl);
-    //}
-
+    // Respond with the generated content
     res.json({ title, description, content });
   } catch (error) {
     res.status(500).json({ error: 'Error generating full course content.' });
   }
 });
 
-// src/routes/courseRoutes.js
+// Get all courses from Firestore
 router.get('/courses', async (req, res) => {
   try {
     const coursesSnapshot = await db.collection('courses').get();
@@ -187,10 +175,9 @@ router.get('/courses', async (req, res) => {
   }
 });
 
-
 // Save course to Firestore
 router.post('/save-course', async (req, res) => {
-  const { category, title, description, content} = req.body;
+  const { category, title, description, content } = req.body;
 
   try {
     const docRef = await db.collection('courses').add({
