@@ -85,6 +85,7 @@ router.get('/random-topics', async (req, res) => {
 });
 
 // Generate full course content based on the course ID and save it
+
 // Generate full course content based on the course ID and save it
 router.post('/generate-full-course/:id', async (req, res) => {
   const { id } = req.params;
@@ -99,25 +100,40 @@ router.post('/generate-full-course/:id', async (req, res) => {
     const topicData = topicDoc.data();
     const { title, description, category } = topicData;
 
-    const prompt = `
-      Generate a detailed lesson for the following:
-      Category: ${category}
-      Title: ${title}
-      Description: ${description}
-      
-      The lesson should include:
-      - Objectives
-      - Introduction
-      - Content with well-outlined sections and easy-to-understand explanations with examples
-      - For practical lessons, specify all tools needed and include descriptions
-      - Conclusion
-      - References which must include links.
-    `;
+    // Generate each part separately
+    const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}".`;
+    const introductionPrompt = `Write an introduction for a lesson on the topic "${title}" in the category "${category}".`;
+    const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations and examples.`;
+    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}".`;
+    const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}".`;
+    const referencesPrompt = `Provide references for a lesson on the topic "${title}" in the category "${category}". Include links where available.`;
 
-    const aiResponse = await generateText(prompt);
+    const objectives = (await generateText(objectivesPrompt)).trim();
+    const introduction = (await generateText(introductionPrompt)).trim();
+    const content = (await generateText(contentPrompt)).trim();
+    const practicalLessons = (await generateText(practicalPrompt)).trim();
+    const conclusion = (await generateText(conclusionPrompt)).trim();
+    const references = (await generateText(referencesPrompt)).trim();
 
-    // Assume aiResponse is a plain text block, and pass it to parseContentToJSON
-    const structuredContent = parseContentToJSON(aiResponse);
+    // Structure the content into JSON format
+    const structuredContent = {
+      lesson_title: title,
+      objectives: objectives,
+      introduction: introduction,
+      sections: content.split('\n\n').map((section, index) => ({
+        title: `Section ${index + 1}`,
+        content: section.trim(),
+      })),
+      practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
+        title: `Practical Lesson ${index + 1}`,
+        content: lesson.trim(),
+      })),
+      conclusion: conclusion,
+      references: references.split('\n').map((ref, index) => ({
+        title: `Reference ${index + 1}`,
+        link: ref.trim(),
+      })),
+    };
 
     // Save the generated content to Firestore
     try {
@@ -144,51 +160,10 @@ router.post('/generate-full-course/:id', async (req, res) => {
     }
 
   } catch (error) {
+    console.error('Error generating full course content:', error);
     res.status(500).json({ error: 'Error generating full course content.' });
   }
 });
-
-// Helper function to parse AI-generated text into structured JSON
-function parseContentToJSON(aiResponse) {
-  return {
-    lesson_title: extractSection(aiResponse, 'Title'),
-    objectives: extractSection(aiResponse, 'Objectives'),
-    introduction: extractSection(aiResponse, 'Introduction'),
-    sections: extractMultipleSections(aiResponse, 'Section'),
-    practical_lessons: extractMultipleSections(aiResponse, 'Practical Lesson'),
-    conclusion: extractSection(aiResponse, 'Conclusion'),
-    references: extractReferences(aiResponse),
-  };
-}
-
-// Extraction functions to parse sections from AI response
-function extractSection(content, sectionTitle) {
-  const regex = new RegExp(`\\b${sectionTitle}:\\b([\\s\\S]*?)(?=\\n\\n|\\b[A-Z][a-z]+:|$)`, 'i');
-  const match = content.match(regex);
-  return match ? match[1].trim() : '';
-}
-
-function extractMultipleSections(content, sectionTitle) {
-  const regex = new RegExp(`\\b${sectionTitle} (\\d+):\\b([\\s\\S]*?)(?=\\n\\n|\\b[A-Z][a-z]+:|$)`, 'g');
-  const matches = [...content.matchAll(regex)];
-  return matches.map(match => ({
-    title: `${sectionTitle} ${match[1]}`,
-    content: match[2].trim(),
-  }));
-}
-
-function extractReferences(content) {
-  const regex = /References:\n([\s\S]*?)(?=\n\n|$)/i;
-  const match = content.match(regex);
-  if (match) {
-    const refs = match[1].trim().split('\n').filter(ref => ref);
-    return refs.map(ref => {
-      const [title, link] = ref.split(' - ');
-      return { title: title.trim(), link: link.trim() };
-    });
-  }
-  return [];
-}
 
       
       
