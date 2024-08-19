@@ -167,7 +167,7 @@ router.post('/generate-full-course/:id', async (req, res) => {
 
 
 // Generate full course content based on the course ID and save it
-router.post('/generate-full-course/:id', async (req, res) => {
+router.post('/generate-full-course', async (req, res) => {
   const { title, description, category } = req.body;
 
   try {
