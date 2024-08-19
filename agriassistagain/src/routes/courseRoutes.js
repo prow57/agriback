@@ -85,6 +85,7 @@ router.get('/random-topics', async (req, res) => {
 });
 
 // Generate full course content based on the course ID and save it
+// Generate full course content based on the course ID and save it
 router.post('/generate-full-course/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -115,7 +116,7 @@ router.post('/generate-full-course/:id', async (req, res) => {
 
     const aiResponse = await generateText(prompt);
 
-    // Parsing the AI response into the structured JSON format
+    // Assume aiResponse is a plain text block, and pass it to parseContentToJSON
     const structuredContent = parseContentToJSON(aiResponse);
 
     // Save the generated content to Firestore
@@ -143,35 +144,32 @@ router.post('/generate-full-course/:id', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Error generating full course content:', error);
     res.status(500).json({ error: 'Error generating full course content.' });
   }
 });
 
 // Helper function to parse AI-generated text into structured JSON
 function parseContentToJSON(aiResponse) {
-  const { title, description, content } = aiResponse;
-
   return {
-    lesson_title: title.replace(/"/g, ''),
-    objectives: extractSection(content, 'Objectives'),
-    introduction: extractSection(content, 'Introduction'),
-    sections: extractMultipleSections(content, 'Stage'),
-    practical_lessons: extractPracticalLessons(content),
-    conclusion: extractSection(content, 'Conclusion'),
-    references: extractReferences(content),
+    lesson_title: extractSection(aiResponse, 'Title'),
+    objectives: extractSection(aiResponse, 'Objectives'),
+    introduction: extractSection(aiResponse, 'Introduction'),
+    sections: extractMultipleSections(aiResponse, 'Section'),
+    practical_lessons: extractMultipleSections(aiResponse, 'Practical Lesson'),
+    conclusion: extractSection(aiResponse, 'Conclusion'),
+    references: extractReferences(aiResponse),
   };
 }
 
 // Extraction functions to parse sections from AI response
 function extractSection(content, sectionTitle) {
-  const regex = new RegExp(`\\*\\*${sectionTitle}:\\*\\*\\n([\\s\\S]*?)(?=\\n\\*\\*|$)`, 'i');
+  const regex = new RegExp(`\\b${sectionTitle}:\\b([\\s\\S]*?)(?=\\n\\n|\\b[A-Z][a-z]+:|$)`, 'i');
   const match = content.match(regex);
   return match ? match[1].trim() : '';
 }
 
 function extractMultipleSections(content, sectionTitle) {
-  const regex = new RegExp(`### ${sectionTitle} (\\d+):(.*?)((?=###|\\*\\*)|$)`, 'gs');
+  const regex = new RegExp(`\\b${sectionTitle} (\\d+):\\b([\\s\\S]*?)(?=\\n\\n|\\b[A-Z][a-z]+:|$)`, 'g');
   const matches = [...content.matchAll(regex)];
   return matches.map(match => ({
     title: `${sectionTitle} ${match[1]}`,
@@ -179,35 +177,21 @@ function extractMultipleSections(content, sectionTitle) {
   }));
 }
 
-function extractPracticalLessons(content) {
-  const regex = /### For Practical Lessons:[\s\S]*?\*\*Tools needed:\*\*(.*?)\*\*Descriptions:\*\*(.*?)((?=\n\*\*|$))/gs;
-  const match = content.match(regex);
-  if (match) {
-    const tools = match[1].trim().split('\n').map(tool => tool.replace(/\t*\+ /, '').trim());
-    const descriptions = match[2].trim().split('\n').map(desc => desc.trim());
-
-    return tools.map((tool, index) => ({
-      title: `Practical Lesson ${index + 1}`,
-      tools: tool,
-      description: descriptions[index] || '',
-    }));
-  }
-  return [];
-}
-
 function extractReferences(content) {
-  const regex = /### References:\n([\s\S]*?)(?=\n\*\*|$)/;
+  const regex = /References:\n([\s\S]*?)(?=\n\n|$)/i;
   const match = content.match(regex);
   if (match) {
     const refs = match[1].trim().split('\n').filter(ref => ref);
     return refs.map(ref => {
-      const [title, link] = ref.split('\n').map(line => line.trim());
-      return { title: title.replace(/^\[\d+\] /, ''), link };
+      const [title, link] = ref.split(' - ');
+      return { title: title.trim(), link: link.trim() };
     });
   }
   return [];
 }
 
+      
+      
 // Get all courses from Firestore
 router.get('/courses', async (req, res) => {
   try {
