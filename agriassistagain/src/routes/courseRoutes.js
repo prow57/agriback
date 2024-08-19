@@ -169,10 +169,6 @@ router.post('/generate-full-course', async (req, res) => {
       //images.push(imageUrl);
     //}
 
-    await db.collection('courses').doc(id).update({
-      content,
-    });
-
     res.json({ title, description, content });
   } catch (error) {
     res.status(500).json({ error: 'Error generating full course content.' });
