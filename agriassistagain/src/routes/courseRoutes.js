@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { generateText, generateImage } = require('../services/llamaAIService');
+const { generateText } = require('../services/llamaAIService');
 const admin = require('firebase-admin');
 
 const db = admin.firestore();
@@ -40,6 +40,7 @@ router.post('/generate-course-topic', async (req, res) => {
       res.status(500).json({ error: 'Error saving course topic and description to the database.' });
     }
   } catch (error) {
+    console.error('Error generating course topic and description:', error);
     res.status(500).json({ error: 'Error generating course topic and description.' });
   }
 });
@@ -54,6 +55,7 @@ router.get('/topics', async (req, res) => {
     });
     res.json(courses);
   } catch (error) {
+    console.error('Error fetching courses:', error);
     res.status(500).json({ error: 'Error fetching courses.' });
   }
 });
@@ -77,13 +79,12 @@ router.get('/random-topics', async (req, res) => {
 
     res.json(selectedCourses);
   } catch (error) {
+    console.error('Error fetching random courses:', error);
     res.status(500).json({ error: 'Error fetching random courses.' });
   }
 });
 
 // Generate full course content based on the course ID and save it
-router.post('/generate-full-course/:id', async (req, res) => {
-  const { i// Generate full course content based on the course ID and save it
 router.post('/generate-full-course/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -142,6 +143,7 @@ router.post('/generate-full-course/:id', async (req, res) => {
     }
 
   } catch (error) {
+    console.error('Error generating full course content:', error);
     res.status(500).json({ error: 'Error generating full course content.' });
   }
 });
@@ -206,82 +208,6 @@ function extractReferences(content) {
   return [];
 }
 
-
-// Helper function to parse AI-generated text into structured JSON
-function parseContentToJSON(title, content) {
-  // Example parsing logic (this will need to be adapted to how your AI model returns content)
-  return {
-    lesson_title: title,
-    objectives: extractSection(content, 'Objectives'),
-    introduction: extractSection(content, 'Introduction'),
-    sections: extractMultipleSections(content, 'Section'),
-    practical_lessons: extractMultipleSections(content, 'Activity'),
-    conclusion: extractSection(content, 'Conclusion'),
-    references: extractReferences(content),
-  };
-}
-
-// Example extraction functions (to be customized based on the format of AI output)
-function extractSection(content, sectionTitle) {
-  const regex = new RegExp(`${sectionTitle}:(.*?)(?=\\n\\n|$)`, 's');
-  const match = content.match(regex);
-  return match ? match[1].trim() : '';
-}
-
-function extractMultipleSections(content, sectionTitle) {
-  const regex = new RegExp(`${sectionTitle} (\\d+):(.*?)(?=\\n\\n|$)`, 'gs');
-  const matches = [...content.matchAll(regex)];
-  return matches.map(match => ({
-    title: `${sectionTitle} ${match[1]}`,
-    content: match[2].trim(),
-  }));
-}
-
-function extractReferences(content) {
-  const regex = /References:(.*?)(?=\n\n|$)/s;
-  const match = content.match(regex);
-  if (match) {
-    const refs = match[1].trim().split('\n').filter(ref => ref);
-    return refs.map(ref => {
-      const [title, link] = ref.split(' - ');
-      return { title: title.trim(), link: link.trim() };
-    });
-  }
-  return [];
-}
-
-module.exports = router;
-
-
-// Generate full course content based on title, description, and category
-router.post('/generate-full-course', async (req, res) => {
-  const { title, description, category } = req.body;
-
-  const prompt = `
-    Generate a detailed lesson for the following:
-    Category: ${category}
-    Title: ${title}
-    Description: ${description}
-    
-    The lesson should include:
-    - Objectives
-    - Introduction
-    - Content with well-outlined sections and easy-to-understand explanations with examples
-    - For practical lessons, specify all tools needed and include descriptions
-    - Conclusion
-    - References which must include links.
-  `;
-
-  try {
-    const content = await generateText(prompt);
-
-    // Respond with the generated content
-    res.json({ title, description, content });
-  } catch (error) {
-    res.status(500).json({ error: 'Error generating full course content.' });
-  }
-});
-
 // Get all courses from Firestore
 router.get('/courses', async (req, res) => {
   try {
@@ -292,6 +218,7 @@ router.get('/courses', async (req, res) => {
     });
     res.json(courses);
   } catch (error) {
+    console.error('Error fetching courses:', error);
     res.status(500).json({ error: 'Error fetching courses.' });
   }
 });
@@ -310,6 +237,7 @@ router.post('/save-course', async (req, res) => {
     });
     res.json({ message: 'Course saved successfully.', id: docRef.id });
   } catch (error) {
+    console.error('Error saving course:', error);
     res.status(500).json({ error: 'Error saving course.' });
   }
 });
