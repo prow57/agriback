@@ -167,33 +167,45 @@ router.post('/generate-full-course/:id', async (req, res) => {
 
 
 // Generate full course content based on the course ID and save it
-router.post('/generate-full-course', async (req, res) => {
-  const { category, title, description } = req.body;
-  if (!category || !title || !description) {
-    return res.status(400).json({ error: 'Category, title, and description are required.' });
-  }
+router.post('/generate-full-course/:id', async (req, res) => {
+  const { title, description, category } = req.body;
+
   try {
-    
 
-    const prompt = `
-      Generate a detailed lesson for the following:
-      Category: ${category}
-      Title: ${title}
-      Description: ${description}
-      
-      The lesson should include:
-      - Objectives
-      - Introduction
-      - Content with well-outlined sections and easy-to-understand explanations with examples
-      - For practical lessons, specify all tools needed and include descriptions
-      - Conclusion
-      - References which must include links.
-    `;
+    // Generate each part separately
+    const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}".`;
+    const introductionPrompt = `Write an introduction for a lesson on the topic "${title}" in the category "${category}".`;
+    const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations and examples.`;
+    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}".`;
+    const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}".`;
+    const referencesPrompt = `Provide references for a lesson on the topic "${title}" in the category "${category}". Include links where available.`;
 
-    const aiResponse = await generateText(prompt);
+    const objectives = (await generateText(objectivesPrompt)).trim();
+    const introduction = (await generateText(introductionPrompt)).trim();
+    const content = (await generateText(contentPrompt)).trim();
+    const practicalLessons = (await generateText(practicalPrompt)).trim();
+    const conclusion = (await generateText(conclusionPrompt)).trim();
+    const references = (await generateText(referencesPrompt)).trim();
 
-    // Parsing the AI response into the structured JSON format
-    const structuredContent = parseContentToJSON(aiResponse);
+    // Structure the content into JSON format
+    const structuredContent = {
+      lesson_title: title,
+      objectives: objectives,
+      introduction: introduction,
+      sections: content.split('\n\n').map((section, index) => ({
+        title: `Section ${index + 1}`,
+        content: section.trim(),
+      })),
+      practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
+        title: `Practical Lesson ${index + 1}`,
+        content: lesson.trim(),
+      })),
+      conclusion: conclusion,
+      references: references.split('\n').map((ref, index) => ({
+        title: `Reference ${index + 1}`,
+        link: ref.trim(),
+      })),
+    };
 
     // Save the generated content to Firestore
     try {
@@ -220,69 +232,10 @@ router.post('/generate-full-course', async (req, res) => {
     }
 
   } catch (error) {
+    console.error('Error generating full course content:', error);
     res.status(500).json({ error: 'Error generating full course content.' });
   }
 });
-
-// Helper function to parse AI-generated text into structured JSON
-function parseContentToJSON(aiResponse) {
-  const { title, description, content } = aiResponse;
-
-  return {
-    lesson_title: title.replace(/"/g, ''),
-    objectives: extractSection(content, 'Objectives'),
-    introduction: extractSection(content, 'Introduction'),
-    sections: extractMultipleSections(content, 'Stage'),
-    practical_lessons: extractPracticalLessons(content),
-    conclusion: extractSection(content, 'Conclusion'),
-    references: extractReferences(content),
-  };
-}
-
-// Extraction functions to parse sections from AI response
-function extractSection(content, sectionTitle) {
-  const regex = new RegExp(`\\*\\*${sectionTitle}:\\*\\*\\n([\\s\\S]*?)(?=\\n\\*\\*|$)`, 'i');
-  const match = content.match(regex);
-  return match ? match[1].trim() : '';
-}
-
-function extractMultipleSections(content, sectionTitle) {
-  const regex = new RegExp(`### ${sectionTitle} (\\d+):(.*?)((?=###|\\*\\*)|$)`, 'gs');
-  const matches = [...content.matchAll(regex)];
-  return matches.map(match => ({
-    title: `${sectionTitle} ${match[1]}`,
-    content: match[2].trim(),
-  }));
-}
-
-function extractPracticalLessons(content) {
-  const regex = /### For Practical Lessons:[\s\S]*?\*\*Tools needed:\*\*(.*?)\*\*Descriptions:\*\*(.*?)((?=\n\*\*|$))/gs;
-  const match = content.match(regex);
-  if (match) {
-    const tools = match[1].trim().split('\n').map(tool => tool.replace(/\t*\+ /, '').trim());
-    const descriptions = match[2].trim().split('\n').map(desc => desc.trim());
-
-    return tools.map((tool, index) => ({
-      title: `Practical Lesson ${index + 1}`,
-      tools: tool,
-      description: descriptions[index] || '',
-    }));
-  }
-  return [];
-}
-
-function extractReferences(content) {
-  const regex = /### References:\n([\s\S]*?)(?=\n\*\*|$)/;
-  const match = content.match(regex);
-  if (match) {
-    const refs = match[1].trim().split('\n').filter(ref => ref);
-    return refs.map(ref => {
-      const [title, link] = ref.split('\n').map(line => line.trim());
-      return { title: title.replace(/^\[\d+\] /, ''), link };
-    });
-  }
-  return [];
-}
       
       
 // Get all courses from Firestore
