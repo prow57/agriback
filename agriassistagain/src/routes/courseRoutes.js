@@ -206,8 +206,6 @@ function extractReferences(content) {
   return [];
 }
 
-module.exports = router;
-
 
 // Helper function to parse AI-generated text into structured JSON
 function parseContentToJSON(title, content) {
