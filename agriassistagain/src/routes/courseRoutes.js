@@ -118,11 +118,19 @@ router.post('/generate-full-course/:id', async (req, res) => {
     const content = await generateText(prompt);
 
     // Optionally save the generated content
-    await db.collection('courses').doc(id).update({
-      content,
-    });
+    try {
+      const docRef = await db.collection('courses').add({
+        category,
+        title,
+        description,
+        content,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      
+      // Return the generated title, description, and the document ID
+    
 
-    res.json({ title, description, content });
+      res.json({ category, title, description, content, id: docRef.id});
 
   } catch (error) {
     res.status(500).json({ error: 'Error generating full course content.' });
