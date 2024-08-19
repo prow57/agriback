@@ -20,7 +20,7 @@ router.post('/generate-course-topic', async (req, res) => {
     const title = titleResult.trim();  // Assume the title is the whole output
 
     // Step 2: Generate the description based on the title
-    const descriptionPrompt = `Write a brief introduction to the topic: "${title}". Summarize what the topic is about in agriculture.`;
+    const descriptionPrompt = `Write a brief introduction to the topic: "${title}" in summary in agriculture.`;
 
     const descriptionResult = await generateText(descriptionPrompt);
     const description = descriptionResult.trim();  // Assume the description is the whole output
@@ -91,14 +91,14 @@ router.post('/generate-full-course/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const courseDoc = await db.collection('topics').doc(id).get();
+    const topicDoc = await db.collection('topics').doc(id).get();
 
-    if (!courseDoc.exists) {
-      return res.status(404).json({ error: 'Course not found.' });
+    if (!topicDoc.exists) {
+      return res.status(404).json({ error: 'Topics not found.' });
     }
 
-    const courseData = courseDoc.data();
-    const { title, description, category } = courseData;
+    const topicData = topicDoc.data();
+    const { title, description, category } = topicData;
 
     const prompt = `
       Generate a detailed lesson for the following:
@@ -120,7 +120,6 @@ router.post('/generate-full-course/:id', async (req, res) => {
     // Optionally save the generated content
     try {
       const docRef = await db.collection('courses').add({
-        title,
         content,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
