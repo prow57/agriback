@@ -83,6 +83,8 @@ router.get('/random-topics', async (req, res) => {
 
 // Generate full course content based on the course ID and save it
 router.post('/generate-full-course/:id', async (req, res) => {
+  const { i// Generate full course content based on the course ID and save it
+router.post('/generate-full-course/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -110,7 +112,10 @@ router.post('/generate-full-course/:id', async (req, res) => {
       - References which must include links.
     `;
 
-    const content = await generateText(prompt);
+    const aiResponse = await generateText(prompt);
+
+    // Parsing the AI response into the structured JSON format
+    const structuredContent = parseContentToJSON(aiResponse);
 
     // Save the generated content to Firestore
     try {
@@ -118,19 +123,137 @@ router.post('/generate-full-course/:id', async (req, res) => {
         category,
         title,
         description,
-        content,
+        content: structuredContent,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Return the generated title, category, description, and content
-      res.json({ category, title, description, content, id: docRef.id });
+      // Return the structured JSON response
+      res.json({
+        id: docRef.id,
+        category,
+        title,
+        description,
+        content: structuredContent,
+      });
+
     } catch (dbError) {
-      res.status(500).json({ error: 'Error saving course content to the database.' });
+      console.error('Error saving full course content:', dbError);
+      res.status(500).json({ error: 'Error saving full course content to the database.' });
     }
+
   } catch (error) {
     res.status(500).json({ error: 'Error generating full course content.' });
   }
 });
+
+// Helper function to parse AI-generated text into structured JSON
+function parseContentToJSON(aiResponse) {
+  const { title, description, content } = aiResponse;
+
+  return {
+    lesson_title: title.replace(/"/g, ''),
+    objectives: extractSection(content, 'Objectives'),
+    introduction: extractSection(content, 'Introduction'),
+    sections: extractMultipleSections(content, 'Stage'),
+    practical_lessons: extractPracticalLessons(content),
+    conclusion: extractSection(content, 'Conclusion'),
+    references: extractReferences(content),
+  };
+}
+
+// Extraction functions to parse sections from AI response
+function extractSection(content, sectionTitle) {
+  const regex = new RegExp(`\\*\\*${sectionTitle}:\\*\\*\\n([\\s\\S]*?)(?=\\n\\*\\*|$)`, 'i');
+  const match = content.match(regex);
+  return match ? match[1].trim() : '';
+}
+
+function extractMultipleSections(content, sectionTitle) {
+  const regex = new RegExp(`### ${sectionTitle} (\\d+):(.*?)((?=###|\\*\\*)|$)`, 'gs');
+  const matches = [...content.matchAll(regex)];
+  return matches.map(match => ({
+    title: `${sectionTitle} ${match[1]}`,
+    content: match[2].trim(),
+  }));
+}
+
+function extractPracticalLessons(content) {
+  const regex = /### For Practical Lessons:[\s\S]*?\*\*Tools needed:\*\*(.*?)\*\*Descriptions:\*\*(.*?)((?=\n\*\*|$))/gs;
+  const match = content.match(regex);
+  if (match) {
+    const tools = match[1].trim().split('\n').map(tool => tool.replace(/\t*\+ /, '').trim());
+    const descriptions = match[2].trim().split('\n').map(desc => desc.trim());
+
+    return tools.map((tool, index) => ({
+      title: `Practical Lesson ${index + 1}`,
+      tools: tool,
+      description: descriptions[index] || '',
+    }));
+  }
+  return [];
+}
+
+function extractReferences(content) {
+  const regex = /### References:\n([\s\S]*?)(?=\n\*\*|$)/;
+  const match = content.match(regex);
+  if (match) {
+    const refs = match[1].trim().split('\n').filter(ref => ref);
+    return refs.map(ref => {
+      const [title, link] = ref.split('\n').map(line => line.trim());
+      return { title: title.replace(/^\[\d+\] /, ''), link };
+    });
+  }
+  return [];
+}
+
+module.exports = router;
+
+
+// Helper function to parse AI-generated text into structured JSON
+function parseContentToJSON(title, content) {
+  // Example parsing logic (this will need to be adapted to how your AI model returns content)
+  return {
+    lesson_title: title,
+    objectives: extractSection(content, 'Objectives'),
+    introduction: extractSection(content, 'Introduction'),
+    sections: extractMultipleSections(content, 'Section'),
+    practical_lessons: extractMultipleSections(content, 'Activity'),
+    conclusion: extractSection(content, 'Conclusion'),
+    references: extractReferences(content),
+  };
+}
+
+// Example extraction functions (to be customized based on the format of AI output)
+function extractSection(content, sectionTitle) {
+  const regex = new RegExp(`${sectionTitle}:(.*?)(?=\\n\\n|$)`, 's');
+  const match = content.match(regex);
+  return match ? match[1].trim() : '';
+}
+
+function extractMultipleSections(content, sectionTitle) {
+  const regex = new RegExp(`${sectionTitle} (\\d+):(.*?)(?=\\n\\n|$)`, 'gs');
+  const matches = [...content.matchAll(regex)];
+  return matches.map(match => ({
+    title: `${sectionTitle} ${match[1]}`,
+    content: match[2].trim(),
+  }));
+}
+
+function extractReferences(content) {
+  const regex = /References:(.*?)(?=\n\n|$)/s;
+  const match = content.match(regex);
+  if (match) {
+    const refs = match[1].trim().split('\n').filter(ref => ref);
+    return refs.map(ref => {
+      const [title, link] = ref.split(' - ');
+      return { title: title.trim(), link: link.trim() };
+    });
+  }
+  return [];
+}
+
+module.exports = router;
+
 
 // Generate full course content based on title, description, and category
 router.post('/generate-full-course', async (req, res) => {
