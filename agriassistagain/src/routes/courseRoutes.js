@@ -62,6 +62,29 @@ router.get('/topics', async (req, res) => {
   }
 });
 
+// Get 5 random topics from the database
+router.get('/random-topics', async (req, res) => {
+  try {
+    const coursesSnapshot = await db.collection('topics').get();
+    const courses = [];
+
+    // Extract data from Firestore snapshot
+    coursesSnapshot.forEach(doc => {
+      courses.push({ id: doc.id, ...doc.data() });
+    });
+
+    // Shuffle the array to randomize the order
+    const shuffledCourses = courses.sort(() => 0.5 - Math.random());
+
+    // Get the first 5 items from the shuffled array
+    const selectedCourses = shuffledCourses.slice(0, 5);
+
+    res.json(selectedCourses);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching random courses.' });
+  }
+});
+
 
 // Generate full course content based on the course ID and save it
 router.post('/generate-full-course/:id', async (req, res) => {
