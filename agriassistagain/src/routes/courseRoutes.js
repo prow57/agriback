@@ -252,6 +252,20 @@ router.get('/courses', async (req, res) => {
     res.status(500).json({ error: 'Error fetching courses.' });
   }
 });
+//Get course by course id
+router.get('/get-course/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const courseDoc = await db.collection('courses').doc(id).get();
+    if (!courseDoc.exists) {
+      return res.status(404).json({ error: 'Course not found.' });
+    }
+    res.json({ id: courseDoc.id, ...courseDoc.data() });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching course.' });
+  }
+});
 
 // Save course to Firestore
 router.post('/save-course', async (req, res) => {
