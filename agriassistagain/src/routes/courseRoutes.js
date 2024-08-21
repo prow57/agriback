@@ -12,7 +12,7 @@ router.post('/generate-course-topic', async (req, res) => {
   const { category } = req.body;
 
   // Step 1: Generate the lesson title based on the category
-  const titlePrompt = `Generate a topic for a lesson in the category: ${category} in agriculture. Just provide the title, don't say anything more.`;
+  const titlePrompt = `Generate a topic for a lesson in the category: ${category} in agriculture. Just provide the title, don't say anything more. Do not include your opening statement on the response.`;
 
   try {
     // Generate the title
@@ -101,12 +101,12 @@ router.post('/generate-full-course/:id', async (req, res) => {
     const { title, description, category } = topicData;
 
     // Generate each part separately
-    const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}".`;
-    const introductionPrompt = `Write an introduction for a lesson on the topic "${title}" in the category "${category}".`;
-    const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations and examples.`;
-    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}".`;
+    const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}". Do not include your opening statement on the response..`;
+    const introductionPrompt = `Write an introduction paragraph for a lesson on the topic "${title}" in the category "${category}". Make it short with less than 14 lines. Do not include your opening statement on the response.`;
+    const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations and examples. Preferably applicable in Malawi. Do not include your opening statement on the response.`;
+    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}". Should be applicable in Malawi. Should be less than 8 lessons.`;
     const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}".`;
-    const referencesPrompt = `Provide references for a lesson on the topic "${title}" in the category "${category}". Include links where available.`;
+    const referencesPrompt = `Provide less than 6 references for a lesson on the topic "${title}" in the category "${category}". Include links where available.`;
 
     const objectives = (await generateText(objectivesPrompt)).trim();
     const introduction = (await generateText(introductionPrompt)).trim();
@@ -176,9 +176,9 @@ router.post('/generate-full-course', async (req, res) => {
     const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}". Do not include your opening statement on the response..`;
     const introductionPrompt = `Write an introduction paragraph for a lesson on the topic "${title}" in the category "${category}". Make it short with less than 14 lines. Do not include your opening statement on the response.`;
     const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations and examples. Preferably applicable in Malawi. Do not include your opening statement on the response.`;
-    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}". Should be applicable in Malawi.`;
+    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}". Should be applicable in Malawi. Should be less than 8 lessons.`;
     const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}".`;
-    const referencesPrompt = `Provide references for a lesson on the topic "${title}" in the category "${category}". Include links where available.`;
+    const referencesPrompt = `Provide less than 6 references for a lesson on the topic "${title}" in the category "${category}". Include links where available.`;
 
     const objectives = (await generateText(objectivesPrompt)).trim();
     const introduction = (await generateText(introductionPrompt)).trim();
