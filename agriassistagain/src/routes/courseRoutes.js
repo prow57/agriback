@@ -287,3 +287,79 @@ router.post('/save-course', async (req, res) => {
 });
 
 module.exports = router;
+
+//Search Endpoints 
+router.get('/search', async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) {
+    return res.status(400).json({ error: 'Please provide a query parameter.' });
+  }
+
+  try {
+    let results = [];
+
+    // Search courses by title, content, description, and conclusion
+    const coursesTitleSnapshot = await db.collection('courses')
+      .where('title', '>=', query)
+      .where('title', '<=', query + '\uf8ff')
+      .get();
+
+    const coursesContentSnapshot = await db.collection('courses')
+      .where('content', '>=', query)
+      .where('content', '<=', query + '\uf8ff')
+      .get();
+
+    const coursesDescriptionSnapshot = await db.collection('courses')
+      .where('description', '>=', query)
+      .where('description', '<=', query + '\uf8ff')
+      .get();
+
+    const coursesConclusionSnapshot = await db.collection('courses')
+      .where('conclusion', '>=', query)
+      .where('conclusion', '<=', query + '\uf8ff')
+      .get();
+
+    // Search topics by title, content, description, and conclusion
+    const topicsTitleSnapshot = await db.collection('topics')
+      .where('title', '>=', query)
+      .where('title', '<=', query + '\uf8ff')
+      .get();
+
+    const topicsContentSnapshot = await db.collection('topics')
+      .where('content', '>=', query)
+      .where('content', '<=', query + '\uf8ff')
+      .get();
+
+    const topicsDescriptionSnapshot = await db.collection('topics')
+      .where('description', '>=', query)
+      .where('description', '<=', query + '\uf8ff')
+      .get();
+
+    const topicsConclusionSnapshot = await db.collection('topics')
+      .where('conclusion', '>=', query)
+      .where('conclusion', '<=', query + '\uf8ff')
+      .get();
+
+    // Combine the results from each query
+    coursesTitleSnapshot.forEach(doc => results.push({ id: doc.id, ...doc.data(), type: 'course' }));
+    coursesContentSnapshot.forEach(doc => results.push({ id: doc.id, ...doc.data(), type: 'course' }));
+    coursesDescriptionSnapshot.forEach(doc => results.push({ id: doc.id, ...doc.data(), type: 'course' }));
+    coursesConclusionSnapshot.forEach(doc => results.push({ id: doc.id, ...doc.data(), type: 'course' }));
+
+    topicsTitleSnapshot.forEach(doc => results.push({ id: doc.id, ...doc.data(), type: 'topic' }));
+    topicsContentSnapshot.forEach(doc => results.push({ id: doc.id, ...doc.data(), type: 'topic' }));
+    topicsDescriptionSnapshot.forEach(doc => results.push({ id: doc.id, ...doc.data(), type: 'topic' }));
+    topicsConclusionSnapshot.forEach(doc => results.push({ id: doc.id, ...doc.data(), type: 'topic' }));
+
+    // Filter duplicate entries
+    results = [...new Map(results.map(item => [item.id, item])).values()];
+
+    // Return the search results
+    res.json(results);
+  } catch (error) {
+    console.error('Error searching:', error);
+    res.status(500).json({ error: 'Error searching courses or topics.' });
+  }
+});
+
