@@ -102,7 +102,7 @@ router.post('/generate-full-course/:id', async (req, res) => {
 
     // Generate each part separately
     const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}".`;
-    const introductionPrompt = `Write an introduction for a lesson on the topic "${title}" in the category "${category}".`;
+    const introductionPrompt = `Make an introduction for a lesson on the topic "${title}" in the category "${category}".`;
     const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations and examples.`;
     const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}".`;
     const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}".`;
