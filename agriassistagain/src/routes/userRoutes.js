@@ -1,4 +1,4 @@
-//src/routes/userRoutes.js
+//src/routes/personalRoutes.js
 const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
@@ -27,11 +27,9 @@ router.post('/generate-personalized-course', async (req, res) => {
     const description = (await generateText(descriptionPrompt)).trim();
 
     // Save the generated course
-    const docRef = await db.collection('courses').add({
+    const docRef = await db.collection('topics').add({
       title,
       description,
-      farming_type,
-      interests,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
