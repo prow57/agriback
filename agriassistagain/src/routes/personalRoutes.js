@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
 const db = admin.firestore();
+const { generateText } = require('../services/llamaAIService');
 
 
 // Modify the course generation route to include user preferences
