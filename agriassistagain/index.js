@@ -28,7 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/advice', adviceRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/api/user',userRoutes);
+app.use('/api/personal', userRoutes);
 
 // Default route
 app.get('/', (req, res) => {
