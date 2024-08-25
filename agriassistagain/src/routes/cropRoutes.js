@@ -4,6 +4,7 @@ const multer = require('multer');
 const axios = require('axios');
 const admin = require('firebase-admin');
 const { v4: uuidv4 } = require('uuid');
+const FormData = require('form-data');  // Make sure this is required for handling form data with axios
 require('dotenv').config();
 
 const PLANT_ID_API_KEY = process.env.PLANT_ID_API_KEY;
@@ -18,9 +19,20 @@ async function analyzeImage(imageBuffer, url) {
     const formData = new FormData();
     formData.append('api_key', PLANT_ID_API_KEY);
     formData.append('images', imageBuffer, { filename: 'image.jpg', contentType: 'image/jpeg' });
-    formData.append('modifiers', 'crops_fast');
-    formData.append('plant_language', 'en');
-    formData.append('plant_details', ['common_names', 'url', 'wiki_description', 'taxonomy', 'synonyms', 'edible_parts'].join(','));
+
+    // Additional form data for Plant Identification API
+    if (url === PLANT_ID_IDENTIFICATION_URL) {
+        formData.append('modifiers', 'crops_fast');
+        formData.append('plant_language', 'en');
+        formData.append('plant_details', ['common_names', 'url', 'wiki_description', 'taxonomy', 'synonyms', 'edible_parts'].join(','));
+    }
+
+    // Additional form data for Health Analysis API
+    if (url === PLANT_ID_HEALTH_ASSESSMENT_URL) {
+        formData.append('health', 'only');
+        formData.append('plant_language', 'en');
+        formData.append('plant_details', ['local_name', 'description', 'url', 'treatment', 'classification', 'common_names', 'cause'].join(','));
+    }
 
     try {
         const response = await axios.post(url, formData, {
@@ -30,6 +42,7 @@ async function analyzeImage(imageBuffer, url) {
         });
         return response.data;
     } catch (error) {
+        console.error('Error analyzing image:', error.response ? error.response.data : error.message);
         throw new Error('Error analyzing image');
     }
 }
