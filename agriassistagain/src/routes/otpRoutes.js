@@ -4,9 +4,13 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 require('dotenv').config();
 
-// Initialize Twilio with Account SID and Auth Token
-const twilio = require('twilio');
-const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+// Initialize Africa's Talking
+const africastalking = require('africastalking')({
+    apiKey: process.env.AT_API_KEY, // Your Africa's Talking API key
+    username: process.env.AT_USERNAME // Your Africa's Talking username
+});
+
+const sms = africastalking.SMS;
 
 // Route to send OTP
 router.post('/send-otp', async (req, res) => {
@@ -22,21 +26,20 @@ router.post('/send-otp', async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Send OTP via Twilio
-    await client.messages.create({
-      body: `Your OTP is ${otp}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phone
+    // Send OTP via Africa's Talking
+    const response = await sms.send({
+      to: [`+${phone}`],
+      message: `Your OTP is ${otp}`
     });
 
-    res.status(200).json({ message: 'OTP sent successfully.' });
+    res.status(200).json({ message: 'OTP sent successfully.', response });
   } catch (error) {
     console.error('Error sending OTP:', error);
     res.status(500).json({ error: 'Error sending OTP.' });
   }
 });
 
-// Route to verify OTP
+// Route to verify OTP (same as before)
 router.post('/verify-otp', async (req, res) => {
   const { phone, otp } = req.body;
 
