@@ -3,13 +3,11 @@ const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
 const admin = require('firebase-admin');
+const db = admin.firestore();
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
-// Initialize Firestore
-const db = admin.firestore();
-// Initialize Firebase Storage
-const storage = admin.storage();
+
 
 // Multer setup for image uploads (in-memory storage)
 const upload = multer({ storage: multer.memoryStorage() });
