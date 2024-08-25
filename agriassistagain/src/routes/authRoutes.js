@@ -66,6 +66,24 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Check if number exists
+router.post('/check-phone', async (req, res) => {
+  const { phone } = req.body;
+
+  try {
+    const userDoc = await db.collection('users').doc(phone).get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: 'No account associated with that number.' });
+    }
+
+    res.status(200).json({ message: 'Phone number exists.' });
+  } catch (error) {
+    console.error('Error checking phone number:', error);
+    res.status(500).json({ error: 'Error checking phone number.' });
+  }
+});
+
 // Set Preferences Route
 router.post('/set-preferences', async (req, res) => {
   const { phone, farming_type, interests } = req.body;
