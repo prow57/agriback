@@ -30,7 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/advice', adviceRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/API/vision', cropRoutes);
+app.use('/api/vision', cropRoutes);
 
 // Default route
 app.get('/', (req, res) => {
