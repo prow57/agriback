@@ -1,17 +1,19 @@
-
-
-//index.js
+// index.js
 
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config(); // Load environment variables
 
-// Import routes
+// Import the db and storage instances from db.js
+const { db, storage } = require('./db');
+
+// Import route handlers
 const courseRoutes = require('./src/routes/courseRoutes');
 const adviceRoutes = require('./src/routes/adviceRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const otpRoutes = require('./src/routes/otpRoutes');
-//const cropRoutes = require('./src/routes/cropRoutes'); // Uncomment w
+//const cropRoutes = require('./src/routes/cropRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,7 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/advice', adviceRoutes);
 app.use('/api/chat', chatRoutes);
-//app.use('/api/vision', cropRoutes); // Uncomment when needed
+//app.use('/api/vision', cropRoutes);
 
 // Default route
 app.get('/', (req, res) => {
