@@ -5,7 +5,7 @@ const cors = require('cors');
 require('dotenv').config(); // Load environment variables
 
 // Import the db and storage instances from db.js
-const { db, storage } = require('./db');
+const { db } = require('./db');
 
 // Import route handlers
 const courseRoutes = require('./src/routes/courseRoutes');
