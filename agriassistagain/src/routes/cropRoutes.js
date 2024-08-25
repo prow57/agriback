@@ -1,11 +1,14 @@
-//routes/cropRoutes.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const admin = require('firebase-admin');
 require('dotenv').config(); // Ensure dotenv is required to use environment variables
+
+// Initialize Firestore
+const db = admin.firestore();
 
 // Multer setup for image uploads 
 const upload = multer({ dest: 'uploads/' });
@@ -37,8 +40,16 @@ router.post('/identify', upload.single('image'), async (req, res) => {
             plant_details: ["common_names", "url", "wiki_description", "taxonomy", "synonyms", "edible_parts"]
         });
 
+        // Save the identification result to Firestore
+        const result = response.data;
+        const docRef = await db.collection('plant_identifications').add({
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            image: base64Image,
+            result,
+        });
+
         // Return the identification result
-        res.json({ message: 'Plant identified', data: response.data });
+        res.json({ message: 'Plant identified', data: result, id: docRef.id });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to identify the plant' });
@@ -48,7 +59,7 @@ router.post('/identify', upload.single('image'), async (req, res) => {
     }
 });
 
-// 2. Crop Vision - Health Ana(using health assessment endpoint)
+// 2. Crop Vision - Health Analysis using health assessment endpoint
 router.post('/health-analysis', upload.single('image'), async (req, res) => {
     const { file } = req;
     if (!file) {
@@ -70,8 +81,16 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
             plant_details: ["local_name", "description", "url", "treatment", "classification", "common_names", "cause"]
         });
 
+        // Save the health analysis result to Firestore
+        const result = response.data;
+        const docRef = await db.collection('health_assessments').add({
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            image: base64Image,
+            result,
+        });
+
         // Return the health analysis result
-        res.json({ message: 'Health analysis complete', data: response.data });
+        res.json({ message: 'Health analysis complete', data: result, id: docRef.id });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to analyze crop health' });
