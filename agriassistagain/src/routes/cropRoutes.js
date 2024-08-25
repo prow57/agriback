@@ -2,21 +2,35 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
 const admin = require('firebase-admin');
-require('dotenv').config(); 
+const { v4: uuidv4 } = require('uuid');
+require('dotenv').config();
 
 // Initialize Firestore
 const db = admin.firestore();
+// Initialize Firebase Storage
+const storage = admin.storage();
 
-// Multer setup for image uploads 
-const upload = multer({ dest: 'uploads/' });
+// Multer setup for image uploads (in-memory storage)
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Plant.id API details for v3
-const PLANT_ID_API_KEY = process.env.PLANT_ID_API_KEY; // Retrieved from .env
+const PLANT_ID_API_KEY = process.env.PLANT_ID_API_KEY;
 const PLANT_ID_IDENTIFICATION_URL = 'https://api.plant.id/v3/identification';
 const PLANT_ID_HEALTH_ASSESSMENT_URL = 'https://api.plant.id/v3/health_assessment';
+
+// Helper function to upload image to Firebase Storage
+async function uploadImageToFirebase(fileBuffer, fileName) {
+    const bucket = storage.bucket();
+    const file = bucket.file(fileName);
+    
+    await file.save(fileBuffer, {
+        metadata: { contentType: 'image/jpeg' }, // Adjust according to your file type
+        public: true,
+    });
+
+    return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+}
 
 // 1. Crop Vision - Identify Crop or Plant Name
 router.post('/identify', upload.single('image'), async (req, res) => {
@@ -26,17 +40,16 @@ router.post('/identify', upload.single('image'), async (req, res) => {
     }
 
     try {
-        // Read the file and convert to base64
-        const imageFilePath = path.resolve(file.path);
-        const imageData = fs.readFileSync(imageFilePath);
-        const base64Image = imageData.toString('base64');
+        // Generate a unique file name and upload to Firebase Storage
+        const fileName = `plants/${uuidv4()}.jpg`;
+        const imageUrl = await uploadImageToFirebase(file.buffer, fileName);
 
         // Make the API call to Plant.id v3 for identification
         const response = await axios.post(PLANT_ID_IDENTIFICATION_URL, {
             api_key: PLANT_ID_API_KEY,
-            images: [base64Image], // Base64 encoded image
-            modifiers: ["crops_fast"], // Optional modifiers
-            plant_language: "en", // Language preference
+            images: [imageUrl],
+            modifiers: ["crops_fast"],
+            plant_language: "en",
             plant_details: ["common_names", "url", "wiki_description", "taxonomy", "synonyms", "edible_parts"]
         });
 
@@ -44,7 +57,7 @@ router.post('/identify', upload.single('image'), async (req, res) => {
         const result = response.data;
         const docRef = await db.collection('plant_identifications').add({
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            image: base64Image,
+            image_url: imageUrl,
             result,
         });
 
@@ -53,9 +66,6 @@ router.post('/identify', upload.single('image'), async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to identify the plant' });
-    } finally {
-        // Clean up the uploaded file
-        fs.unlinkSync(file.path);
     }
 });
 
@@ -67,16 +77,15 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
     }
 
     try {
-        // Read the file and prepare it for the API request
-        const imageFilePath = path.resolve(file.path);
-        const imageData = fs.readFileSync(imageFilePath);
-        const base64Image = imageData.toString('base64');
+        // Generate a unique file name and upload to Firebase Storage
+        const fileName = `health_assessments/${uuidv4()}.jpg`;
+        const imageUrl = await uploadImageToFirebase(file.buffer, fileName);
 
         // Make the API call to Plant.id v3 for health assessment
         const response = await axios.post(PLANT_ID_HEALTH_ASSESSMENT_URL, {
             api_key: PLANT_ID_API_KEY,
-            images: [base64Image],
-            health: "only", // Ensure that only health assessment is performed
+            images: [imageUrl],
+            health: "only",
             plant_language: "en",
             plant_details: ["local_name", "description", "url", "treatment", "classification", "common_names", "cause"]
         });
@@ -85,7 +94,7 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
         const result = response.data;
         const docRef = await db.collection('health_assessments').add({
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            image: base64Image,
+            image_url: imageUrl,
             result,
         });
 
@@ -94,9 +103,6 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to analyze crop health' });
-    } finally {
-        // Clean up the uploaded file
-        fs.unlinkSync(file.path);
     }
 });
 
