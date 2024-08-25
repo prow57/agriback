@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
 const db = admin.firestore();
-const client = require('twilio');
-
-
 require('dotenv').config();
+
+// Initialize Twilio with Account SID and Auth Token
+const twilio = require('twilio');
+const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 // Route to send OTP
 router.post('/send-otp', async (req, res) => {
@@ -60,3 +61,5 @@ router.post('/verify-otp', async (req, res) => {
     res.status(500).json({ error: 'Error verifying OTP.' });
   }
 });
+
+module.exports = router;
