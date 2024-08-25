@@ -7,7 +7,7 @@ const db = admin.firestore();
 
 // Sign-Up Route
 router.post('/signup', async (req, res) => {
-  const { phone, password, location } = req.body;
+  const { fullName, phone, password} = req.body;
 
   try {
     // Hash password
@@ -21,9 +21,10 @@ router.post('/signup', async (req, res) => {
 
     // Create a new user document
     await db.collection('users').doc(phone).set({
+      fullName,
       phone,
       passwordHash: hashedPassword,
-      location,
+      
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
