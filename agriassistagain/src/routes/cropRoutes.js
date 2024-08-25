@@ -5,7 +5,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const admin = require('firebase-admin');
-require('dotenv').config(); // Ensure dotenv is required to use environment variables
+require('dotenv').config(); 
 
 // Initialize Firestore
 const db = admin.firestore();
