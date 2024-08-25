@@ -2,15 +2,9 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
-const admin = require('firebase-admin');
-const { getStorage } = require('firebase-admin/storage');
-
 const { v4: uuidv4 } = require('uuid');
+const { db, storage } = require('./db');
 require('dotenv').config();
-
-
-const db = admin.firestore();
-const storage = getStorage().bucket();
 
 // Multer setup for image uploads (in-memory storage)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -42,72 +36,72 @@ async function uploadImageToFirebase(file) {
 
 // 1. Crop Vision - Identify Crop or Plant Name
 router.post('/identify', upload.single('image'), async (req, res) => {
-    const { file } = req;
-    if (!file) {
-        return res.status(400).json({ error: 'Image file is required' });
-    }
+  const { file } = req;
+  if (!file) {
+    return res.status(400).json({ error: 'Image file is required' });
+  }
 
-    try {
-        // Upload to Firebase Storage
-        const imageUrl = await uploadImageToFirebase(file);
+  try {
+    // Upload to Firebase Storage
+    const imageUrl = await uploadImageToFirebase(file);
 
-        // API call to Plant.id v3 for identification
-        const response = await axios.post(PLANT_ID_IDENTIFICATION_URL, {
-            api_key: PLANT_ID_API_KEY,
-            images: [imageUrl],
-            modifiers: ["crops_fast"],
-            plant_language: "en",
-            plant_details: ["common_names", "url", "wiki_description", "taxonomy", "synonyms", "edible_parts"]
-        });
+    // API call to Plant.id v3 for identification
+    const response = await axios.post(PLANT_ID_IDENTIFICATION_URL, {
+      api_key: PLANT_ID_API_KEY,
+      images: [imageUrl],
+      modifiers: ["crops_fast"],
+      plant_language: "en",
+      plant_details: ["common_names", "url", "wiki_description", "taxonomy", "synonyms", "edible_parts"]
+    });
 
-        // Save the result to Firestore
-        const result = response.data;
-        const docRef = await db.collection('plant_identifications').add({
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            image_url: imageUrl,
-            result,
-        });
+    // Save the result to Firestore
+    const result = response.data;
+    const docRef = await db.collection('plant_identifications').add({
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      image_url: imageUrl,
+      result,
+    });
 
-        res.json({ message: 'Plant identified', data: result, id: docRef.id });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to identify the plant' });
-    }
+    res.json({ message: 'Plant identified', data: result, id: docRef.id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to identify the plant' });
+  }
 });
 
 // 2. Crop Vision - Health Analysis
 router.post('/health-analysis', upload.single('image'), async (req, res) => {
-    const { file } = req;
-    if (!file) {
-        return res.status(400).json({ error: 'Image file is required' });
-    }
+  const { file } = req;
+  if (!file) {
+    return res.status(400).json({ error: 'Image file is required' });
+  }
 
-    try {
-        // Upload to Firebase Storage
-        const imageUrl = await uploadImageToFirebase(file);
+  try {
+    // Upload to Firebase Storage
+    const imageUrl = await uploadImageToFirebase(file);
 
-        // API call to Plant.id v3 for health assessment
-        const response = await axios.post(PLANT_ID_HEALTH_ASSESSMENT_URL, {
-            api_key: PLANT_ID_API_KEY,
-            images: [imageUrl],
-            health: "only",
-            plant_language: "en",
-            plant_details: ["local_name", "description", "url", "treatment", "classification", "common_names", "cause"]
-        });
+    // API call to Plant.id v3 for health assessment
+    const response = await axios.post(PLANT_ID_HEALTH_ASSESSMENT_URL, {
+      api_key: PLANT_ID_API_KEY,
+      images: [imageUrl],
+      health: "only",
+      plant_language: "en",
+      plant_details: ["local_name", "description", "url", "treatment", "classification", "common_names", "cause"]
+    });
 
-        // Save the result to Firestore
-        const result = response.data;
-        const docRef = await db.collection('health_assessments').add({
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            image_url: imageUrl,
-            result,
-        });
+    // Save the result to Firestore
+    const result = response.data;
+    const docRef = await db.collection('health_assessments').add({
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      image_url: imageUrl,
+      result,
+    });
 
-        res.json({ message: 'Health analysis complete', data: result, id: docRef.id });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to analyze crop health' });
-    }
+    res.json({ message: 'Health analysis complete', data: result, id: docRef.id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to analyze crop health' });
+  }
 });
 
 module.exports = router;
