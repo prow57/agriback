@@ -12,6 +12,7 @@ const adviceRoutes = require('./src/routes/adviceRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const otpRoutes = require('./src/routes/otpRoutes');
+const cropRoutes = require('./src/routes/cropRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,7 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/advice', adviceRoutes);
 app.use('/api/chat', chatRoutes);
-
+app.use('/API/vision', cropRoutes);
 
 // Default route
 app.get('/', (req, res) => {
