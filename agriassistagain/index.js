@@ -11,7 +11,7 @@ const courseRoutes = require('./src/routes/courseRoutes');
 const adviceRoutes = require('./src/routes/adviceRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
 const authRoutes = require('./src/routes/authRoutes');
-const authRoutes = require('./src/routes/otpRoutes');
+const otpRoutes = require('./src/routes/otpRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
