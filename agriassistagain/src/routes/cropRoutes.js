@@ -3,7 +3,9 @@ const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
 const admin = require('firebase-admin');
+const { getStorage } = require('firebase-admin/storage');
 const db = admin.firestore();
+const storage = getStorage().bucket();
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
