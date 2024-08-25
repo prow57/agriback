@@ -4,12 +4,19 @@ const multer = require('multer');
 const axios = require('axios');
 const admin = require('firebase-admin');
 const { getStorage } = require('firebase-admin/storage');
-const db = admin.firestore();
-const storage = getStorage().bucket();
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
+// Initialize Firebase Admin
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  });
+}
 
+const db = admin.firestore();
+const storage = getStorage().bucket();
 
 // Multer setup for image uploads (in-memory storage)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -21,7 +28,7 @@ const PLANT_ID_HEALTH_ASSESSMENT_URL = 'https://api.plant.id/v3/health_assessmen
 
 async function uploadImageToFirebase(file) {
   const uuid = uuidv4();
-  const fileName = `${uuid}-${file.originalname}`;
+  const fileName = `uploads/${uuid}-${file.originalname}`;
   const blob = storage.file(fileName);
   const blobStream = blob.createWriteStream({
     metadata: {
@@ -31,16 +38,13 @@ async function uploadImageToFirebase(file) {
 
   return new Promise((resolve, reject) => {
     blobStream.on('error', (err) => reject(err));
-
     blobStream.on('finish', async () => {
       const publicUrl = `https://storage.googleapis.com/${storage.name}/${blob.name}`;
       resolve(publicUrl);
     });
-
     blobStream.end(file.buffer);
   });
 }
-
 
 // 1. Crop Vision - Identify Crop or Plant Name
 router.post('/identify', upload.single('image'), async (req, res) => {
@@ -50,11 +54,10 @@ router.post('/identify', upload.single('image'), async (req, res) => {
     }
 
     try {
-        // Generate a unique file name and upload to Firebase Storage
-        const fileName = `plants/${uuidv4()}.jpg`;
-        const imageUrl = await uploadImageToFirebase(file.buffer, fileName);
+        // Upload to Firebase Storage
+        const imageUrl = await uploadImageToFirebase(file);
 
-        // Make the API call to Plant.id v3 for identification
+        // API call to Plant.id v3 for identification
         const response = await axios.post(PLANT_ID_IDENTIFICATION_URL, {
             api_key: PLANT_ID_API_KEY,
             images: [imageUrl],
@@ -63,7 +66,7 @@ router.post('/identify', upload.single('image'), async (req, res) => {
             plant_details: ["common_names", "url", "wiki_description", "taxonomy", "synonyms", "edible_parts"]
         });
 
-        // Save the identification result to Firestore
+        // Save the result to Firestore
         const result = response.data;
         const docRef = await db.collection('plant_identifications').add({
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -71,7 +74,6 @@ router.post('/identify', upload.single('image'), async (req, res) => {
             result,
         });
 
-        // Return the identification result
         res.json({ message: 'Plant identified', data: result, id: docRef.id });
     } catch (error) {
         console.error(error);
@@ -79,7 +81,7 @@ router.post('/identify', upload.single('image'), async (req, res) => {
     }
 });
 
-// 2. Crop Vision - Health Analysis using health assessment endpoint
+// 2. Crop Vision - Health Analysis
 router.post('/health-analysis', upload.single('image'), async (req, res) => {
     const { file } = req;
     if (!file) {
@@ -87,11 +89,10 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
     }
 
     try {
-        // Generate a unique file name and upload to Firebase Storage
-        const fileName = `health_assessments/${uuidv4()}.jpg`;
-        const imageUrl = await uploadImageToFirebase(file.buffer, fileName);
+        // Upload to Firebase Storage
+        const imageUrl = await uploadImageToFirebase(file);
 
-        // Make the API call to Plant.id v3 for health assessment
+        // API call to Plant.id v3 for health assessment
         const response = await axios.post(PLANT_ID_HEALTH_ASSESSMENT_URL, {
             api_key: PLANT_ID_API_KEY,
             images: [imageUrl],
@@ -100,7 +101,7 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
             plant_details: ["local_name", "description", "url", "treatment", "classification", "common_names", "cause"]
         });
 
-        // Save the health analysis result to Firestore
+        // Save the result to Firestore
         const result = response.data;
         const docRef = await db.collection('health_assessments').add({
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -108,7 +109,6 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
             result,
         });
 
-        // Return the health analysis result
         res.json({ message: 'Health analysis complete', data: result, id: docRef.id });
     } catch (error) {
         console.error(error);
@@ -116,5 +116,4 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
     }
 });
 
-// Export the router
 module.exports = router;
