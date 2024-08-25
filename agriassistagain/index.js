@@ -2,7 +2,7 @@
 
 const express = require('express');
 const cors = require('cors');
-const { db, storage } = require('firebase-admin');
+const { db, storage } = require('./db');
 
 require('dotenv').config();
 
