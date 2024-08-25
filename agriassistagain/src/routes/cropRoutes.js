@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config(); // Ensure dotenv is required to use environment variables
 
-// Multer setup for image uploads
+// Multer setup for image uploads 
 const upload = multer({ dest: 'uploads/' });
 
 // Plant.id API details for v3
@@ -47,7 +47,7 @@ router.post('/identify', upload.single('image'), async (req, res) => {
     }
 });
 
-// 2. Crop Vision - Health Analysis (using health assessment endpoint)
+// 2. Crop Vision - Health Ana(using health assessment endpoint)
 router.post('/health-analysis', upload.single('image'), async (req, res) => {
     const { file } = req;
     if (!file) {
