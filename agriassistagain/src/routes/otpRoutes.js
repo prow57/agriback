@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const admin = require('firebase-admin');
+const db = admin.firestore();
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 // Route to send OTP
