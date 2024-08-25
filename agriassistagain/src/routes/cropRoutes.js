@@ -17,18 +17,28 @@ const PLANT_ID_API_KEY = process.env.PLANT_ID_API_KEY;
 const PLANT_ID_IDENTIFICATION_URL = 'https://api.plant.id/v3/identification';
 const PLANT_ID_HEALTH_ASSESSMENT_URL = 'https://api.plant.id/v3/health_assessment';
 
-// Helper function to upload image to Firebase Storage
-async function uploadImageToFirebase(fileBuffer, fileName) {
-    const bucket = storage.bucket();
-    const file = bucket.file(fileName);
-    
-    await file.save(fileBuffer, {
-        metadata: { contentType: 'image/jpeg' }, // Adjust according to your file type
-        public: true,
+async function uploadImageToFirebase(file) {
+  const uuid = uuidv4();
+  const fileName = `${uuid}-${file.originalname}`;
+  const blob = storage.file(fileName);
+  const blobStream = blob.createWriteStream({
+    metadata: {
+      contentType: file.mimetype,
+    },
+  });
+
+  return new Promise((resolve, reject) => {
+    blobStream.on('error', (err) => reject(err));
+
+    blobStream.on('finish', async () => {
+      const publicUrl = `https://storage.googleapis.com/${storage.name}/${blob.name}`;
+      resolve(publicUrl);
     });
 
-    return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+    blobStream.end(file.buffer);
+  });
 }
+
 
 // 1. Crop Vision - Identify Crop or Plant Name
 router.post('/identify', upload.single('image'), async (req, res) => {
