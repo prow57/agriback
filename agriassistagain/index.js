@@ -1,10 +1,8 @@
-// index.js
+//index.js
 
 const express = require('express');
 const cors = require('cors');
-const admin = require("firebase-admin");
-const { getStorage } = require('firebase-admin/storage');
-const db = require("./db");
+const { db, storage } = require('./db');
 
 require('dotenv').config();
 
@@ -17,9 +15,6 @@ const cropRoutes = require('./src/routes/cropRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-// Initialize Firebase Admin SDK
-
 
 // Middleware
 app.use(cors());
