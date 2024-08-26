@@ -1,7 +1,10 @@
 //src/service/imageService.js
 import { client, Status, GenerationStyle } from "imaginesdk";
-import { bucket, db } from '../../db.js'; // Import your Firebase setup
 import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
+
+
+const db = require('../../db');
+const bucket = require('../../db');
 
 const imagine = client(process.env.IMAGE_API_KEY);
 
