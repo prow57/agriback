@@ -31,7 +31,7 @@ async function analyzeImage(imageBuffer, url) {
         formData.append('classification_level', 'species');
         formData.append('health', 'only'); // Focus on health
         //formData.append('plant_language', 'en');
-        formData.append('similar-images', 'true');
+        formData.append('similar_images', 'true');
     }
 
     try {
