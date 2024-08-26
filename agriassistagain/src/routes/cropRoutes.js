@@ -22,7 +22,7 @@ async function analyzeImage(imageBuffer, url) {
     // Additional form data for Plant Identification API
     if (url === PLANT_ID_IDENTIFICATION_URL) {
         // Remove the unsupported 'crops_fast' modifier
-        formData.append('plant_language', 'en');
+        formData.append('classification_level', 'all');
         formData.append('plant_details', ['common_names', 'url', 'wiki_description', 'taxonomy', 'synonyms', 'edible_parts'].join(','));
     }
 
