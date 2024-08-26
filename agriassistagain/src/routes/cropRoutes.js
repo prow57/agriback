@@ -22,7 +22,7 @@ async function analyzeImage(imageBuffer, url) {
     // Additional form data for Plant Identification API
     if (url === PLANT_ID_IDENTIFICATION_URL) {
         formData.append('classification_level', 'all');
-        formData.append('similar_images', true); // Include similar 
+        formData.append('similar_images', 'true'); // Include similar 
        // formData.append('plant_language', 'en');
     }
 
