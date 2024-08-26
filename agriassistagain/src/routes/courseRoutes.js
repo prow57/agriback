@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const { generateText } = require('../services/llamaAIService');
+const { generateImage } = require('../services/imageService')
 const admin = require('firebase-admin');
 
 const db = admin.firestore();
@@ -263,9 +264,13 @@ router.post('/generate-course', async (req, res) => {
 
     const description = (await generateText(descriptionPrompt)).trim();
 
+    // Generate an image based on the category
+    const image = await generateImage(category, 1);
+
     // Structure the content into JSON format
     const structuredContent = {
       lesson_title: title,
+      image: image.url,
       objectives: objectives,
       introduction: introduction,
       sections: content.split('\n\n').map((section, index) => ({
@@ -288,6 +293,7 @@ router.post('/generate-course', async (req, res) => {
       const docRef = await db.collection('courses').add({
         category,
         title,
+        image: image.url,
         description,
         content: structuredContent,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -298,6 +304,7 @@ router.post('/generate-course', async (req, res) => {
         id: docRef.id,
         category,
         title,
+        image: image.url,
         description,
         content: structuredContent,
       });
