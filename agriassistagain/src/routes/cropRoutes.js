@@ -23,13 +23,16 @@ async function analyzeImage(imageBuffer, url) {
     if (url === PLANT_ID_IDENTIFICATION_URL) {
         // Remove the unsupported 'crops_fast' modifier
         formData.append('classification_level', 'all');
+        formData.append('similar_images', 'true');
         formData.append('plant_details', ['common_names', 'url', 'wiki_description', 'taxonomy', 'synonyms', 'edible_parts'].join(','));
     }
 
     // Additional form data for Health Analysis API
     if (url === PLANT_ID_HEALTH_ASSESSMENT_URL) {
         formData.append('health', 'only');
-        formData.append('plant_language', 'en');
+        formData.append('classification_level', 'species');
+        formData.append('similar_images', 'true');
+        
         formData.append('plant_details', ['local_name', 'description', 'url', 'treatment', 'classification', 'common_names', 'cause'].join(','));
     }
 
