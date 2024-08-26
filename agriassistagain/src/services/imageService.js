@@ -1,27 +1,29 @@
 //src/services/imageService.js
-const axios = require('axios');
+// Import necessary components from the imaginesdk
+import { client, Status, GenerationStyle } from "imaginesdk";
 
-const generateImage = async (prompt, styleId, aspectRatio = '1:1') => {
-  const apiUrl = 'https://api.vyro.ai/v1/imagine/api/generations';
-  const apiKey = process.env.IMAGINE_API_KEY;
+// Initialize the client with your API key
+const imagine = client(process.env.IMAGINE_API_KEY);
 
-  const formData = new FormData();
-  formData.append('prompt', prompt);
-  formData.append('style_id', styleId);
-  formData.append('aspect_ratio', aspectRatio);
-
+// Function to generate an image
+export const generateImage = async (prompt, style = GenerationStyle.IMAGINE_V5) => {
   try {
-    const response = await axios.post(apiUrl, formData, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    // Call the generations method with the prompt and style
+    const response = await imagine.generations(prompt, { style });
+
+    // Check if the response status is OK
+    if (response.status() === Status.OK) {
+      const image = response.data();
+      
+      // If image data is returned, return the image (you could also save it as a file)
+      return image;
+    } else {
+      // If the response status is not OK, throw an error
+      throw new Error(`Image generation failed with status code: ${response.status()}`);
+    }
   } catch (error) {
-    console.error('Error generating image:', error);
-    throw error;
+    // Handle any errors during the API call
+    console.error("Error generating image:", error.message);
+    throw new Error("Failed to generate image. Please try again later.");
   }
 };
-
-module.exports = { generateImage };
