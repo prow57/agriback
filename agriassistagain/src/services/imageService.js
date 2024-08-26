@@ -1,29 +1,54 @@
-//src/services/imageService.js
-// Import necessary components from the imaginesdk
+//src/service/imageService.js
 import { client, Status, GenerationStyle } from "imaginesdk";
+import { bucket, db } from '../db.js'; // Import your Firebase setup
+import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
 
-// Initialize the client with your API key
-const imagine = client(process.env.IMAGINE_API_KEY);
+const imagine = client(process.env.IMAGE_API_KEY);
 
-// Function to generate an image
 export const generateImage = async (prompt, style = GenerationStyle.IMAGINE_V5) => {
   try {
-    // Call the generations method with the prompt and style
     const response = await imagine.generations(prompt, { style });
 
-    // Check if the response status is OK
     if (response.status() === Status.OK) {
       const image = response.data();
-      
-      // If image data is returned, return the image (you could also save it as a file)
-      return image;
+
+      if (image) {
+        // Generate a unique filename for the image
+        const fileName = `${uuidv4()}.png`;
+        const file = bucket.file(fileName);
+
+        // Upload the image to Firebase Storage
+        await file.save(image);
+
+        // Get the URL of the uploaded image
+        const [url] = await file.getSignedUrl({
+          action: 'read',
+          expires: '03-01-2500', // Set an appropriate expiration date
+        });
+
+        // Store the image URL in Firestore
+        const docRef = await db.collection('images').add({
+          prompt,
+          style,
+          url,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Return the image URL
+        return url;
+      } else {
+        throw new Error("No image data returned from API.");
+      }
     } else {
-      // If the response status is not OK, throw an error
       throw new Error(`Image generation failed with status code: ${response.status()}`);
     }
   } catch (error) {
-    // Handle any errors during the API call
-    console.error("Error generating image:", error.message);
-    throw new Error("Failed to generate image. Please try again later.");
+    if (error instanceof SyntaxError) {
+      console.error("Received non-JSON response from API:", error.message);
+      throw new Error("Received an unexpected response from the image generation API. Please check the API key and request parameters.");
+    } else {
+      console.error("Error generating image:", error.message);
+      throw new Error("Failed to generate image. Please try again later.");
+    }
   }
 };
