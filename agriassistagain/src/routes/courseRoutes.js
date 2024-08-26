@@ -236,6 +236,77 @@ router.post('/generate-full-course', async (req, res) => {
     res.status(500).json({ error: 'Error generating full course content.' });
   }
 });
+
+//Generate full course content based on topic and category 
+router.post('/generate-course', async (req, res) => {
+  const { title, category } = req.body;
+
+  try {
+
+    // Generate each part separately
+    const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}". Do not include your opening statement on the response..`;
+    const introductionPrompt = `Write an introduction paragraph for a lesson on the topic "${title}" in the category "${category}". Make it short with less than 14 lines. Do not include your opening statement on the response.`;
+    const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations and examples. Preferably applicable in Malawi. Do not include your opening statement on the response.`;
+    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}". Should be applicable in Malawi. Should be less than 8 lessons.`;
+    const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}".`;
+    const referencesPrompt = `Provide less than 6 references for a lesson on the topic "${title}" in the category "${category}". Include links where available.`;
+
+    const objectives = (await generateText(objectivesPrompt)).trim();
+    const introduction = (await generateText(introductionPrompt)).trim();
+    const content = (await generateText(contentPrompt)).trim();
+    const practicalLessons = (await generateText(practicalPrompt)).trim();
+    const conclusion = (await generateText(conclusionPrompt)).trim();
+    const references = (await generateText(referencesPrompt)).trim();
+
+    // Structure the content into JSON format
+    const structuredContent = {
+      lesson_title: title,
+      objectives: objectives,
+      introduction: introduction,
+      sections: content.split('\n\n').map((section, index) => ({
+        title: `Section ${index + 1}`,
+        content: section.trim(),
+      })),
+      practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
+        title: `Practical Lesson ${index + 1}`,
+        content: lesson.trim(),
+      })),
+      conclusion: conclusion,
+      references: references.split('\n').map((ref, index) => ({
+        title: `Reference ${index + 1}`,
+        link: ref.trim(),
+      })),
+    };
+
+    // Save the generated content to Firestore
+    try {
+      const docRef = await db.collection('courses').add({
+        category,
+        title,
+        description,
+        content: structuredContent,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Return the structured JSON response
+      res.json({
+        id: docRef.id,
+        category,
+        title,
+        description,
+        content: structuredContent,
+      });
+
+    } catch (dbError) {
+      console.error('Error saving full course content:', dbError);
+      res.status(500).json({ error: 'Error saving full course content to the database.' });
+    }
+
+  } catch (error) {
+    console.error('Error generating full course content:', error);
+    res.status(500).json({ error: 'Error generating full course content.' });
+  }
+});
       
       
 // Get all courses from Firestore
