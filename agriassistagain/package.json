@@ -19,6 +19,7 @@
     "path": "^0.12.7",
     "fs": "^0.0.1-security",
     "uuid": "^10.0.0",
+    "imaginesdk":"^1.1.0",
     "bcrypt": "^5.1.0",
     "express": "^4.19.2",
     "firebase": "^10.13.0",
