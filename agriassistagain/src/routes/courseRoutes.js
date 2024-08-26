@@ -265,8 +265,8 @@ router.post('/generate-course', async (req, res) => {
     const description = (await generateText(descriptionPrompt)).trim();
 
     // Generate an image based on the category
-    const image = await generateImage(category, 1);
-    const imageUrl = image.url;
+    //const image = await generateImage(category, 1);
+    const imageUrl = "image";
 
     // Structure the content into JSON format
     const structuredContent = {
