@@ -3,8 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
 const admin = require('firebase-admin');
-const { v4: uuidv4 } = require('uuid');
-const FormData = require('form-data');  // Make sure this is required for handling form data with axios
+const FormData = require('form-data');
 require('dotenv').config();
 
 const PLANT_ID_API_KEY = process.env.PLANT_ID_API_KEY;
@@ -22,7 +21,7 @@ async function analyzeImage(imageBuffer, url) {
 
     // Additional form data for Plant Identification API
     if (url === PLANT_ID_IDENTIFICATION_URL) {
-        formData.append('modifiers', 'crops_fast');
+        // Remove the unsupported 'crops_fast' modifier
         formData.append('plant_language', 'en');
         formData.append('plant_details', ['common_names', 'url', 'wiki_description', 'taxonomy', 'synonyms', 'edible_parts'].join(','));
     }
