@@ -3,7 +3,7 @@ const axios = require('axios');
 
 const generateImage = async (prompt, styleId, aspectRatio = '1:1') => {
   const apiUrl = 'https://api.vyro.ai/v1/imagine/api/generations';
-  const apiKey = '<your-api-key>'; // Replace with your Vyro.ai API key
+  const apiKey = process.env.IMAGINE_API_KEY;
 
   const formData = new FormData();
   formData.append('prompt', prompt);
