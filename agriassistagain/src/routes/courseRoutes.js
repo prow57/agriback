@@ -251,12 +251,17 @@ router.post('/generate-course', async (req, res) => {
     const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}".`;
     const referencesPrompt = `Provide less than 6 references for a lesson on the topic "${title}" in the category "${category}". Include links where available.`;
 
+
+    const descriptionPrompt = 'Write a Short description of a lesson on a topic "${title}" to do with "${category}". Do not include your opening statement. Make it brief and short. Should be related to malawi.'
+
     const objectives = (await generateText(objectivesPrompt)).trim();
     const introduction = (await generateText(introductionPrompt)).trim();
     const content = (await generateText(contentPrompt)).trim();
     const practicalLessons = (await generateText(practicalPrompt)).trim();
     const conclusion = (await generateText(conclusionPrompt)).trim();
     const references = (await generateText(referencesPrompt)).trim();
+
+    const description = (await generateText(descriptionPrompt)).trim();
 
     // Structure the content into JSON format
     const structuredContent = {
