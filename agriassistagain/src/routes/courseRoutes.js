@@ -118,23 +118,26 @@ router.post('/generate-full-course/:id', async (req, res) => {
 
     // Structure the content into JSON format
     const structuredContent = {
-      lesson_title: title,
-      objectives: objectives,
-      introduction: introduction,
-      sections: content.split('\n\n').map((section, index) => ({
-        title: `Section ${index + 1}`,
-        content: section.trim(),
-      })),
-      practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
-        title: `Practical Lesson ${index + 1}`,
-        content: lesson.trim(),
-      })),
-      conclusion: conclusion,
-      references: references.split('\n').map((ref, index) => ({
-        title: `Reference ${index + 1}`,
-        link: ref.trim(),
-      })),
+  lesson_title: title,
+  objectives: objectives,
+  introduction: introduction,
+  sections: content.split('\n\n').map(section => {
+    const [firstLine, ...rest] = section.trim().split('\n');
+    return {
+      title: firstLine.trim(),
+      content: rest.join('\n').trim(),
     };
+  }),
+  practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
+    title: `Practical Lesson ${index + 1}`,
+    content: lesson.trim(),
+  })),
+  conclusion: conclusion,
+  references: references.split('\n').map((ref, index) => ({
+    title: `Reference ${index + 1}`,
+    link: ref.trim(),
+  })),
+};
 
     // Save the generated content to Firestore
     try {
@@ -190,23 +193,26 @@ router.post('/generate-full-course', async (req, res) => {
 
     // Structure the content into JSON format
     const structuredContent = {
-      lesson_title: title,
-      objectives: objectives,
-      introduction: introduction,
-      sections: content.split('\n\n').map((section, index) => ({
-        title: `Section ${index + 1}`,
-        content: section.trim(),
-      })),
-      practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
-        title: `Practical Lesson ${index + 1}`,
-        content: lesson.trim(),
-      })),
-      conclusion: conclusion,
-      references: references.split('\n').map((ref, index) => ({
-        title: `Reference ${index + 1}`,
-        link: ref.trim(),
-      })),
+  lesson_title: title,
+  objectives: objectives,
+  introduction: introduction,
+  sections: content.split('\n\n').map(section => {
+    const [firstLine, ...rest] = section.trim().split('\n');
+    return {
+      title: firstLine.trim(),
+      content: rest.join('\n').trim(),
     };
+  }),
+  practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
+    title: `Practical Lesson ${index + 1}`,
+    content: lesson.trim(),
+  })),
+  conclusion: conclusion,
+  references: references.split('\n').map((ref, index) => ({
+    title: `Reference ${index + 1}`,
+    link: ref.trim(),
+  })),
+};
 
     // Save the generated content to Firestore
     try {
