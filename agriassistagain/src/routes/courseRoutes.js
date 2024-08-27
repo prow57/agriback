@@ -245,7 +245,7 @@ router.post('/generate-full-course', async (req, res) => {
 });
 
 //Generate full course content based on topic and category 
-router.post('/generate-course', async (req, res) => {
+router.post('/generate-explore', async (req, res) => {
   const { title, category } = req.body;
 
   try {
@@ -343,6 +343,29 @@ router.get('/get-explore', async (req, res) => {
     res.status(500).json({ error: 'Error fetching courses.' });
   }
 });
+
+//deleted explored course based on id
+router.delete('/delete-explore/:id', async (req, res) => {
+  try {
+    const courseId = req.params.id; // Get the document ID from the route parameters
+    const courseRef = db.collection('explore').doc(courseId);
+
+    // Check if the document exists
+    const doc = await courseRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Course not found.' });
+    }
+
+    // Delete the document
+    await courseRef.delete();
+
+    res.json({ message: 'Course successfully deleted.' });
+  } catch (error) {
+    console.error('Error deleting course:', error);
+    res.status(500).json({ error: 'Error deleting course.' });
+  }
+});
+
       
       
 // Get all courses from Firestore
