@@ -365,6 +365,26 @@ router.delete('/delete-explore/:id', async (req, res) => {
     res.status(500).json({ error: 'Error deleting course.' });
   }
 });
+//View course generated course based on id
+router.get('/get-explore/:id', async (req, res) => {
+  try {
+    const courseId = req.params.id; // Get the document ID from the route parameters
+    const courseRef = db.collection('explore').doc(courseId);
+
+    // Fetch the document
+    const doc = await courseRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Course not found.' });
+    }
+
+    // Send the document data as JSON
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    console.error('Error fetching course:', error);
+    res.status(500).json({ error: 'Error fetching course.' });
+  }
+});
+
 
       
       
