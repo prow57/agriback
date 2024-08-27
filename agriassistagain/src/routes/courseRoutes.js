@@ -274,8 +274,8 @@ router.post('/generate-course', async (req, res) => {
       image: imageUrl,
       objectives: objectives,
       introduction: introduction,
-      sections: content.split('\n\n') => ({
-    
+      sections: content.split('\n\n').map((section, index)  => ({
+        title: `Section ${index + 1}`,
         content: section.trim(),
       })),
       practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
