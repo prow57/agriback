@@ -299,7 +299,7 @@ router.post('/generate-course', async (req, res) => {
 
     // Save the generated content to Firestore
     try {
-      const docRef = await db.collection('courses').add({
+      const docRef = await db.collection('explore').add({
         category,
         title,
         image: imageUrl,
@@ -326,6 +326,21 @@ router.post('/generate-course', async (req, res) => {
   } catch (error) {
     console.error('Error generating full course content:', error);
     res.status(500).json({ error: 'Error generating full course content.' });
+  }
+});
+
+// Get all courses explored by user from firebase
+router.get('/get-explore', async (req, res) => {
+  try {
+    const coursesSnapshot = await db.collection('explore').get();
+    const courses = [];
+    coursesSnapshot.forEach(doc => {
+      courses.push({ id: doc.id, ...doc.data() });
+    });
+    res.json(courses);
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    res.status(500).json({ error: 'Error fetching courses.' });
   }
 });
       
