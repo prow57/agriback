@@ -245,64 +245,60 @@ router.post('/generate-full-course', async (req, res) => {
 });
 
 //Generate full course content based on topic and category 
+// Generate full course content based on topic and category 
 router.post('/generate-explore', async (req, res) => {
   const { title, category } = req.body;
 
   try {
 
     // Generate each part separately
-    const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}". Do not include your opening statement on the response..`;
-    const introductionPrompt = `Write an introduction paragraph for a lesson on the topic "${title}" in the category "${category}". Make it short with less than 14 lines. Do not include your opening statement on the response.`;
-    const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations and examples. Preferably applicable in Malawi. Do not include your opening statement on the response.`;
-    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}". Should be applicable in Malawi. Should be less than 8 lessons.`;
-    const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}".`;
-    const referencesPrompt = `Provide less than 6 references for a lesson on the topic "${title}" in the category "${category}". Include links where available.`;
+    const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}". Provide them in a numbered list format.`;
+    const introductionPrompt = `Write a concise introduction for a lesson on the topic "${title}" in the category "${category}". Ensure it is less than 14 lines and sets up the context for the rest of the lesson.`;
+    const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations, examples, and practical applications relevant to Malawi. Start each section with a title.`;
+    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}". Should include fewer than 8 lessons and be applicable to Malawi. Each lesson should start with a title.`;
+    const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}". Summarize the key points discussed in the lesson.`;
+    const referencesPrompt = `Provide fewer than 6 references for a lesson on the topic "${title}" in the category "${category}". Include links where available. Use proper citation format.`;
 
+    const descriptionPrompt = `Write a short, focused description of a lesson on the topic "${title}" within the "${category}" category. Ensure it is directly related to the context of Malawi.`;
 
-    const descriptionPrompt = 'Write a Short description of a lesson on a topic "${title}" to do with "${category}". Do not include your opening statement. Make it brief and short. Should be related to malawi.'
-
+    // Generate the content
     const objectives = (await generateText(objectivesPrompt)).trim();
     const introduction = (await generateText(introductionPrompt)).trim();
     const content = (await generateText(contentPrompt)).trim();
     const practicalLessons = (await generateText(practicalPrompt)).trim();
     const conclusion = (await generateText(conclusionPrompt)).trim();
     const references = (await generateText(referencesPrompt)).trim();
-
     const description = (await generateText(descriptionPrompt)).trim();
-
-    // Generate an image based on the category
-    //const image = await generateImage(category, 1);
-    const imageUrl = "image";
 
     // Structure the content into JSON format
     const structuredContent = {
-     lesson_title: title,
-     objectives: objectives,
-     introduction: introduction,
-     sections: content.split('\n\n').map(section => {
-    const [firstLine, ...rest] = section.trim().split('\n');
-    return {
-      title: firstLine.trim(),
-      content: rest.join('\n').trim(),
+      lesson_title: title,
+      objectives: objectives,
+      introduction: introduction,
+      sections: content.split('\n\n').map(section => {
+        const [firstLine, ...rest] = section.trim().split('\n');
+        return {
+          title: firstLine.trim(),
+          content: rest.join('\n').trim(),
+        };
+      }),
+      practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
+        title: `Practical Lesson ${index + 1}`,
+        content: lesson.trim(),
+      })),
+      conclusion: conclusion,
+      references: references.split('\n').map((ref, index) => ({
+        title: `Reference ${index + 1}`,
+        link: ref.trim(),
+      })),
     };
-  }),
-  practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
-    title: `Practical Lesson ${index + 1}`,
-    content: lesson.trim(),
-  })),
-  conclusion: conclusion,
-  references: references.split('\n').map((ref, index) => ({
-    title: `Reference ${index + 1}`,
-    link: ref.trim(),
-  })),
-};
 
     // Save the generated content to Firestore
     try {
       const docRef = await db.collection('explore').add({
         category,
         title,
-        image: imageUrl,
+        image: "image", // Placeholder for image URL
         description,
         content: structuredContent,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -313,7 +309,7 @@ router.post('/generate-explore', async (req, res) => {
         id: docRef.id,
         category,
         title,
-        image: imageUrl,
+        image: "image", // Placeholder for image URL
         description,
         content: structuredContent,
       });
@@ -328,6 +324,8 @@ router.post('/generate-explore', async (req, res) => {
     res.status(500).json({ error: 'Error generating full course content.' });
   }
 });
+
+
 
 // Get all courses explored by user from firebase
 router.get('/get-explore', async (req, res) => {
