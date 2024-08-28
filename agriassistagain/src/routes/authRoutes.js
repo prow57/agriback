@@ -85,6 +85,36 @@ router.post('/check-phone', async (req, res) => {
   }
 });
 
+// Set New Password Route
+router.post('/set-password', async (req, res) => {
+  const { phone, newPassword } = req.body;
+
+  try {
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Get user document reference
+    const userRef = db.collection('users').doc(phone);
+
+    // Check if user exists
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Update the user's password
+    await userRef.update({
+      passwordHash: hashedPassword,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.status(200).json({ message: 'Password updated successfully.' });
+  } catch (error) {
+    console.error('Error setting new password:', error);
+    res.status(500).json({ error: 'Error setting new password.' });
+  }
+});
+
 // Set Preferences Route
 router.post('/set-preferences', async (req, res) => {
   const { phone, farming_type, interests } = req.body;
