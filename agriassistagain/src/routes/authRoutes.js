@@ -86,7 +86,7 @@ router.post('/check-phone', async (req, res) => {
 });
 
 // Set New Password Route
-router.post('/set-password', async (req, res) => {
+router.post('/reset-password', async (req, res) => {
   const { phone, newPassword } = req.body;
 
   try {
