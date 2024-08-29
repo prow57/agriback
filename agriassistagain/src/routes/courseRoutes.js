@@ -403,7 +403,7 @@ router.post('/generate-explore', async (req, res) => {
         content: structuredContent,
       });
 
-    } catch (dbError)
+    } catch (dbError){
           // Catching the database error
     console.error('Error saving full course content:', dbError);
     res.status(500).json({ error: 'Error saving full course content to the database.' });
