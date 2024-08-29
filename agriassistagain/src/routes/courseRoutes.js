@@ -246,7 +246,7 @@ router.post('/generate-full-course', async (req, res) => {
 
 //Generate full course content based on topic and category 
 // Generate full course content based on topic and category 
-router.post('/generate-explore', async (req, res) => {
+router.post('/generate-explore2', async (req, res) => {
   const { title, category } = req.body;
 
   try {
@@ -317,6 +317,96 @@ router.post('/generate-explore', async (req, res) => {
     } catch (dbError) {
       console.error('Error saving full course content:', dbError);
       res.status(500).json({ error: 'Error saving full course content to the database.' });
+    }
+
+  } catch (error) {
+    console.error('Error generating full course content:', error);
+    res.status(500).json({ error: 'Error generating full course content.' });
+  }
+});
+
+// Import the generateImage function
+// Update the path as needed
+
+router.post('/generate-explore', async (req, res) => {
+  const { title, category } = req.body;
+
+  try {
+    // Generate each part separately
+    const objectivesPrompt = `Write the objectives for a lesson on the topic "${title}" in the category "${category}". Provide them in a numbered list format.`;
+    const introductionPrompt = `Write a concise introduction for a lesson on the topic "${title}" in the category "${category}". Ensure it is less than 14 lines and sets up the context for the rest of the lesson.`;
+    const contentPrompt = `Write the detailed content for a lesson on the topic "${title}" in the category "${category}". Include well-outlined sections with easy-to-understand explanations, examples, and practical applications relevant to Malawi. Start each section with a title.`;
+    const practicalPrompt = `Describe the practical lessons, including the tools needed and their descriptions, for a lesson on the topic "${title}" in the category "${category}". Should include fewer than 8 lessons and be applicable to Malawi. Each lesson should start with a title.`;
+    const conclusionPrompt = `Write a conclusion for a lesson on the topic "${title}" in the category "${category}". Summarize the key points discussed in the lesson.`;
+    const referencesPrompt = `Provide fewer than 6 references for a lesson on the topic "${title}" in the category "${category}". Include links where available. Use proper citation format.`;
+    const descriptionPrompt = `Write a short, focused description of a lesson on the topic "${title}" within the "${category}" category. Ensure it is directly related to the context of Malawi.`;
+
+    // Generate the content
+    const objectives = (await generateText(objectivesPrompt)).trim();
+    const introduction = (await generateText(introductionPrompt)).trim();
+    const content = (await generateText(contentPrompt)).trim();
+    const practicalLessons = (await generateText(practicalPrompt)).trim();
+    const conclusion = (await generateText(conclusionPrompt)).trim();
+    const references = (await generateText(referencesPrompt)).trim();
+    const description = (await generateText(descriptionPrompt)).trim();
+
+    // Generate the image based on the title and category
+    let imageUrl;
+    try {
+      imageUrl = await generateImage(`A visual representation of ${title} in the context of ${category}`);
+    } catch (imageError) {
+      console.error('Error generating image:', imageError);
+      return res.status(500).json({ error: 'Error generating image for the course content.' });
+    }
+
+    // Structure the content into JSON format
+    const structuredContent = {
+      lesson_title: title,
+      objectives: objectives,
+      introduction: introduction,
+      sections: content.split('\n\n').map(section => {
+        const [firstLine, ...rest] = section.trim().split('\n');
+        return {
+          title: firstLine.trim(),
+          content: rest.join('\n').trim(),
+        };
+      }),
+      practical_lessons: practicalLessons.split('\n\n').map((lesson, index) => ({
+        title: `Practical Lesson ${index + 1}`,
+        content: lesson.trim(),
+      })),
+      conclusion: conclusion,
+      references: references.split('\n').map((ref, index) => ({
+        title: `Reference ${index + 1}`,
+        link: ref.trim(),
+      })),
+    };
+
+    // Save the generated content to Firestore
+    try {
+      const docRef = await db.collection('explore').add({
+        category,
+        title,
+        image: imageUrl, // Use the generated image URL
+        description,
+        content: structuredContent,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Return the structured JSON response
+      res.json({
+        id: docRef.id,
+        category,
+        title,
+        image: imageUrl, // Include the image URL in the response
+        description,
+        content: structuredContent,
+      });
+
+    } catch (dbError)
+          // Catching the database error
+    console.error('Error saving full course content:', dbError);
+    res.status(500).json({ error: 'Error saving full course content to the database.' });
     }
 
   } catch (error) {
