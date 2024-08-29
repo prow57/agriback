@@ -246,7 +246,7 @@ router.post('/generate-full-course', async (req, res) => {
 
 //Generate full course content based on topic and category 
 // Generate full course content based on topic and category 
-router.post('/generate-exp', async (req, res) => {
+router.post('/generate-explore', async (req, res) => {
   const { title, category } = req.body;
 
   try {
@@ -328,7 +328,7 @@ router.post('/generate-exp', async (req, res) => {
 // Import the generateImage function
 // Update the path as needed
 
-router.post('/generate-explore', async (req, res) => {
+router.post('/generate-explore-image', async (req, res) => {
   const { title, category } = req.body;
 
   try {
