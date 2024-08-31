@@ -47,7 +47,7 @@ async function analyzeImage(imageBuffer, url) {
     }
 }
 
-// 1. Crop Vision - Identify Crop or Plant Name
+// 1. Create - Crop Vision - Identify Crop or Plant Name with ID
 router.post('/identify', upload.single('image'), async (req, res) => {
     const { file } = req;
     if (!file) {
@@ -57,20 +57,25 @@ router.post('/identify', upload.single('image'), async (req, res) => {
     try {
         const result = await analyzeImage(file.buffer, PLANT_ID_IDENTIFICATION_URL);
         
-        // Save the result to Firestore
-        const docRef = await admin.firestore().collection('plant_identifications').add({
+        // Generate a new document reference with an ID
+        const docRef = admin.firestore().collection('plant_identifications').doc();
+        const docId = docRef.id;
+        
+        // Save the result to Firestore with the generated ID
+        await docRef.set({
+            id: docId, // Include the ID in the document
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             result,
         });
 
-        res.json({ message: 'Plant identified', data: result, id: docRef.id });
+        res.json({ message: 'Plant identified', data: result, id: docId });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to identify the plant' });
     }
 });
 
-// 2. Crop Vision - Health Analysis
+// 2. Create - Crop Vision - Health Analysis with ID
 router.post('/health-analysis', upload.single('image'), async (req, res) => {
     const { file } = req;
     if (!file) {
@@ -79,19 +84,26 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
 
     try {
         const result = await analyzeImage(file.buffer, PLANT_ID_HEALTH_ASSESSMENT_URL);
-
-        // Save the result to Firestore
-        const docRef = await admin.firestore().collection('health_assessments').add({
+        
+        // Generate a new document reference with an ID
+        const docRef = admin.firestore().collection('health_assessments').doc();
+        const docId = docRef.id;
+        
+        // Save the result to Firestore with the generated ID
+        await docRef.set({
+            id: docId, // Include the ID in the document
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             result,
         });
 
-        res.json({ message: 'Health analysis complete', data: result, id: docRef.id });
+        res.json({ message: 'Health analysis complete', data: result, id: docId });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to analyze crop health' });
     }
 });
+
+
 
 // 3. Read - Get a single plant identification by ID
 router.get('/identify/:id', async (req, res) => {
