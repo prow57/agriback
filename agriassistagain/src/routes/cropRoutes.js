@@ -93,4 +93,32 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
     }
 });
 
+// 3. Read - Get a single plant identification by ID
+router.get('/identify/:id', async (req, res) => {
+    try {
+        const doc = await admin.firestore().collection('plant_identifications').doc(req.params.id).get();
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'Plant identification not found' });
+        }
+        res.json({ id: doc.id, data: doc.data() });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to retrieve plant identification' });
+    }
+});
+
+// 4. Read - Get a single health assessment by ID
+router.get('/health-analysis/:id', async (req, res) => {
+    try {
+        const doc = await admin.firestore().collection('health_assessments').doc(req.params.id).get();
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'Health assessment not found' });
+        }
+        res.json({ id: doc.id, data: doc.data() });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to retrieve health assessment' });
+    }
+});
+
 module.exports = router;
