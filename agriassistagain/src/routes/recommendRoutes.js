@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { generateText } = require('./llamaAIService'); // Import the generateText method
+const { generateText } = require('../services/llamaAIService');
 
 // Weather API configuration
 const WEATHER_API_KEY = process.env.WEATHER_API_KEY; // Your Weather API key
