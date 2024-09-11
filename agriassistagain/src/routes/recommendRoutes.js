@@ -8,7 +8,7 @@ const WEATHER_API_KEY = process.env.WEATHER_API_KEY; // Your Weather API key
 const WEATHER_API_URL = 'http://api.weatherapi.com/v1/current.json';
 
 // POST endpoint for recommendations based on provided weather data
-router.post('/recommend-weather', async (req, res) => {
+router.post('/weather', async (req, res) => {
   try {
     const { location } = req.body; // Expecting location to be provided in the request body
 
