@@ -23,7 +23,7 @@ router.post('/weather', async (req, res) => {
     const temperature = forecastDay.day.avgtemp_c;
 
     // Create a prompt based on the weather information
-    const prompt = `Provide a short farm activity for today based on the weather forecast for ${location}. The forecast for today is ${condition} with an average temperature of ${temperature}°C.`;
+    const prompt = `Provide a short recommendayions for Malawian Farmers today based on the weather forecast for ${location}. The forecast for today is ${condition} with an average temperature of ${temperature}°C. Follow some sample examples like these but you can add your own word and any extra things, Based on today's weather, make sure you do. Or its  Normal farm activies may continue or preceed if, or say ita good day to do a specific activity, or ot will rain heavily no need for irrigation. `;
 
     // Generate recommendations using the AI service
     const recommendations = await generateText(prompt);
