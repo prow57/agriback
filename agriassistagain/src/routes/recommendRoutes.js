@@ -10,7 +10,7 @@ const WEATHER_API_URL = 'http://api.weatherapi.com/v1/forecast.json';
 // POST endpoint for recommendations based on provided weather data
 router.post('/weather', async (req, res) => {
   try {
-    const { location, days = 7 } = req.body; // Expecting location and optionally days to be provided in the request body
+    const { location, days = 1 } = req.body; // Expecting location and optionally days to be provided in the request body
 
     // Fetch the weather forecast data
     const weatherResponse = await axios.get(`${WEATHER_API_URL}?key=${WEATHER_API_KEY}&q=${location}&days=${days}`);
