@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const { generateText } = require('../services/llamaAIService');
 
 // AI content generation function (simulating AI service)
 async function generateAIContent(topic) {
