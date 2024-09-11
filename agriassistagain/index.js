@@ -8,6 +8,7 @@ require('dotenv').config(); // Load environment variables
 const { db } = require('./db');
 
 // Import route handlers
+const recommendRoutes = require('./src/routes/recommendRoutes');
 const courseRoutes = require('./src/routes/courseRoutes');
 const adviceRoutes = require('./src/routes/adviceRoutes');
 const chatRoutes = require('./src/routes/chatRoutes');
