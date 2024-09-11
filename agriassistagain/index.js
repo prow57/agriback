@@ -32,6 +32,7 @@ app.use('/api/advice', adviceRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/vision', cropRoutes);
 app.use('/api/community', communityRoute);
+app.use('api/recommend', recommendRoutes);
 
 // Default route
 app.get('/', (req, res) => {
