@@ -14,7 +14,7 @@ const chatRoutes = require('./src/routes/chatRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const otpRoutes = require('./src/routes/otpRoutes');
 const cropRoutes = require('./src/routes/cropRoutes');
-const communityRoute = require('./src/routes/communityRoute.js');
+const communityRoute = require('./src/routes/communityRoute');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
