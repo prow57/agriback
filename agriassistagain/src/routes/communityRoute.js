@@ -11,10 +11,10 @@ async function generateAIContent(topic) {
     const aiContent = await generateText(prompt);
 
     // Corrected: Use backticks for template literals
-    const promptSec = `Generate a short breakdown of best practices and tips based on ${aiContent} in the topic ${topic}.`;
+    const promptSec = `Generate a short breakdown of best practices and tips based on ${aiContent} in the topic ${topic}. Do not include your opening statement.`;
     const bestPractices = await generateText(promptSec);
 
-    const promptThird = `Generate a short list of benefits based on ${aiContent} and ${bestPractices} on the topic ${topic}.`;
+    const promptThird = `Generate a short list of benefits based on ${aiContent} and ${bestPractices} on the topic ${topic}. Do not include your opening statement.``;
     const benefits = await generateText(promptThird);
 
     // Simulated structured response
