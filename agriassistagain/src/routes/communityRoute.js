@@ -1,4 +1,4 @@
-// communityRoute.js
+//communitRoute.js
 
 const express = require('express');
 const router = express.Router();
@@ -10,13 +10,13 @@ async function generateAIContent(topic) {
     const prompt = `Generate detailed content about ${topic} in the context of agriculture.`;
     const aiContent = await generateText(prompt);
 
-    const prompt2 = 'Generate a short breakdown of best practices and tips based on ${iContent} in the topic ${topic}.';
-    const bestPractises = await generateText(prompt2);
+    // Corrected: Use backticks for template literals
+    const prompt2 = `Generate a short breakdown of best practices and tips based on ${aiContent} in the topic ${topic}.`;
+    const bestPractices = await generateText(prompt2);
 
-    const prompt3 = 'Generate a short list of benefits based on ${aiContent} and ${bestPractises} on the topic ${topic}.';
+    const prompt3 = `Generate a short list of benefits based on ${aiContent} and ${bestPractices} on the topic ${topic}.`;
     const benefits = await generateText(prompt3);
 
-   
     // Simulated structured response
     return {
       title: topic,
@@ -28,7 +28,7 @@ async function generateAIContent(topic) {
         },
         {
           heading: `Best Practices for ${topic}`,
-          content: bestPractises,
+          content: bestPractices,
         },
         {
           heading: `${topic} Benefits`,
