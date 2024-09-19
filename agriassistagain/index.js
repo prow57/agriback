@@ -1,8 +1,8 @@
-// index.js
-
+//index.js
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config(); // Load environment variables
+const swaggerSetup = require('./swagger'); // Import Swagger setup
 
 // Import the db and storage instances from db.js
 const { db } = require('./db');
@@ -23,6 +23,9 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Swagger documentation setup
+swaggerSetup(app);
 
 // Routes for Endpoints 
 app.use('/api/verify', otpRoutes);
