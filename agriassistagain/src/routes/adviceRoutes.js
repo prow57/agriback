@@ -1,5 +1,45 @@
 // src/routes/adviceRoutes.js
 
+/**
+ * @swagger
+ * /api/advice/get-advice:
+ *   post:
+ *     summary: Get farming advice
+ *     tags: [Advice]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 description: Type of farming (Crop/Animal)
+ *               name:
+ *                 type: string
+ *                 description: Name of the crop or animal
+ *               currentMethods:
+ *                 type: string
+ *                 description: Current farming methods being used
+ *               issues:
+ *                 type: string
+ *                 description: Issues or challenges faced
+ *     responses:
+ *       200:
+ *         description: Farming advice response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 advice:
+ *                   type: string
+ *                   description: AI-generated farming advice
+ *       500:
+ *         description: Error generating advice
+ */
+
 const express = require('express');
 const router = express.Router();
 const { generateText } = require('../services/llamaAIService');
