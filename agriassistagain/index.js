@@ -2,9 +2,8 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config(); // Load environment variables
-// Import Swagger setup
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./swagger');
+const swaggerSetup = require('./swagger'); // Import Swagger setup
+
 // Import the db and storage instances from db.js
 const { db } = require('./db');
 
@@ -26,9 +25,7 @@ app.use(cors());
 app.use(express.json());
 
 // Swagger documentation setup
-// Swagger Documentation Route
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+swaggerSetup(app);
 
 // Routes for Endpoints 
 app.use('/api/verify', otpRoutes);
@@ -48,5 +45,4 @@ app.get('/', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log('Swagger docs are available at https://agriback-plum.vercel.app/api-docs');
 });
