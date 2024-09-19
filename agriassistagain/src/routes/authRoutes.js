@@ -6,6 +6,37 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 
 // Sign-Up Route
+
+/**
+ * @swagger
+ * /api/auth/signup:
+ *   post:
+ *     summary: Sign up a new user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *                 description: Full name of the user
+ *               phone:
+ *                 type: string
+ *                 description: Phone number of the user
+ *               password:
+ *                 type: string
+ *                 description: Password for the user
+ *     responses:
+ *       201:
+ *         description: User signed up successfully
+ *       400:
+ *         description: User already exists
+ *       500:
+ *         description: Error signing up
+ */
 router.post('/signup', async (req, res) => {
   const { fullName, phone, password} = req.body;
 
@@ -36,6 +67,36 @@ router.post('/signup', async (req, res) => {
 });
 
 // Login Route
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Log in a user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 description: Phone number of the user
+ *               password:
+ *                 type: string
+ *                 description: Password for the user
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       401:
+ *         description: Invalid credentials
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Error logging in
+ */
 router.post('/login', async (req, res) => {
   const { phone, password } = req.body;
 
@@ -68,6 +129,31 @@ router.post('/login', async (req, res) => {
 });
 
 // Check if number exists
+
+/**
+ * @swagger
+ * /api/auth/check-phone:
+ *   post:
+ *     summary: Check if a phone number is registered
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 description: Phone number to check
+ *     responses:
+ *       200:
+ *         description: Phone number exists
+ *       404:
+ *         description: No account associated with the phone number
+ *       500:
+ *         description: Error checking phone number
+ */
 router.post('/check-phone', async (req, res) => {
   const { phone } = req.body;
 
@@ -86,6 +172,35 @@ router.post('/check-phone', async (req, res) => {
 });
 
 // Set New Password Route
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Reset a user's password
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 description: Phone number of the user
+ *               newPassword:
+ *                 type: string
+ *                 description: New password for the user
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Error setting new password
+ */
+
 router.post('/reset-password', async (req, res) => {
   const { phone, newPassword } = req.body;
 
@@ -116,6 +231,35 @@ router.post('/reset-password', async (req, res) => {
 });
 
 // Set Preferences Route
+
+/**
+ * @swagger
+ * /api/auth/set-preferences:
+ *   post:
+ *     summary: Set user preferences
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 description: Phone number of the user
+ *               farming_type:
+ *                 type: string
+ *                 description: Type of farming user is involved in
+ *               interests:
+ *                 type: string
+ *                 description: Interests of the user
+ *     responses:
+ *       200:
+ *         description: Preferences set successfully
+ *       500:
+ *         description: Error setting preferences
+ */
 router.post('/set-preferences', async (req, res) => {
   const { phone, farming_type, interests } = req.body;
 
