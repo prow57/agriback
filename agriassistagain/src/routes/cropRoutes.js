@@ -48,7 +48,8 @@ async function analyzeImage(imageBuffer, url) {
  * @swagger
  * /identify:
  *   post:
- *     summary: Identify a plant or crop from an image
+ *     summary: Identify a plant or crop from an image such as weeds or animal feeds
+       tags: [Leaf Scan]
  *     description: Upload an image to identify the plant or crop and store the result in Firestore.
  *     requestBody:
  *       required: true
@@ -110,6 +111,7 @@ router.post('/identify', upload.single('image'), async (req, res) => {
  * /health-analysis:
  *   post:
  *     summary: Analyze the health of a plant from an image
+       tags: [Leaf Scan]
  *     description: Upload an image to assess the health of the plant and store the result in Firestore.
  *     requestBody:
  *       required: true
@@ -170,8 +172,9 @@ router.post('/health-analysis', upload.single('image'), async (req, res) => {
  * @swagger
  * /identify/{id}:
  *   get:
- *     summary: Get a single plant identification by ID
- *     description: Retrieve a plant identification result by its ID.
+ *     summary: Get a single plant identification by id
+       tags: [Leaf Scan]
+ *     description: Retrieve a plant identification result by its I.
  *     parameters:
  *       - in: path
  *         name: id
@@ -214,6 +217,7 @@ router.get('/identify/:id', async (req, res) => {
  * /health-analysis/{id}:
  *   get:
  *     summary: Get a single health assessment by ID
+       tags: [Leaf Scan]
  *     description: Retrieve a health assessment result by its ID.
  *     parameters:
  *       - in: path
