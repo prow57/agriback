@@ -18,7 +18,7 @@
  *                 description: The user's question for the chatbot
  *     responses:
  *       200:
- *         description: Chatbot response
+ *         description: Agriassist-AI Chatbot response
  *         content:
  *           application/json:
  *             schema:
