@@ -41,7 +41,7 @@ router.post('/chat', async (req, res) => {
   const { message } = req.body;
 
   const prompt = `
-    You are an expert in agriculture named Agriassistai. Answer the following question in a detailed and informative manner:
+    You are an expert in agriculture named Agriassist-AI. Answer the following question in simple if its a simple question and detailed if the question is about specific agricultural area in a simplified manner:
 
     Question: ${message}
   `;
