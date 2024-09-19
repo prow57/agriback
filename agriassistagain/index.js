@@ -45,4 +45,5 @@ app.get('/', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log('Swagger docs are available at https://agriback-plum.vercel.app/api-docs');
 });
