@@ -20,6 +20,7 @@ const sms = africastalking.SMS;
  * /send-otp:
  *   post:
  *     summary: Send OTP to the user's phone
+       tags : [Otp-Verification]
  *     description: Generates a 6-digit OTP and sends it to the specified phone number via SMS.
  *     requestBody:
  *       required: true
