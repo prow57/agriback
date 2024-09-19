@@ -1,3 +1,5 @@
+//recommendRoites.js
+
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
@@ -7,23 +9,56 @@ const { generateText } = require('../services/llamaAIService');
 const WEATHER_API_KEY = process.env.WEATHER_API_KEY; // Your Weather API key
 const WEATHER_API_URL = 'http://api.weatherapi.com/v1/forecast.json';
 
-// POST endpoint for recommendations based on provided weather data
+/**
+ * @swagger
+ * /weather:
+ *   post:
+ *     summary: Get weather-based recommendations for farmers
+ *     description: Fetches weather data for a specific location and provides recommendations based on the forecast.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               location:
+ *                 type: string
+ *                 description: The location for which to get the weather forecast.
+ *                 example: "Lilongwe"
+ *               days:
+ *                 type: integer
+ *                 description: The number of days for the forecast (optional, default is 1).
+ *                 example: 1
+ *     responses:
+ *       200:
+ *         description: A successful response with recommendations based on the weather.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 recommendations:
+ *                   type: string
+ *                   description: Recommendations for farmers based on the weather forecast.
+ *       500:
+ *         description: An error occurred while fetching recommendations.
+ */
 router.post('/weather', async (req, res) => {
   try {
-    const { location, days = 1 } = req.body; // Expecting location and optionally days to be provided in the request body
+    const { location, days = 1 } = req.body;
 
     // Fetch the weather forecast data
     const weatherResponse = await axios.get(`${WEATHER_API_URL}?key=${WEATHER_API_KEY}&q=${location}&days=${days}`);
     const weatherData = weatherResponse.data;
 
     // Extract relevant weather information
-    // Example: Get the forecast for the first day
-    const forecastDay = weatherData.forecast.forecastday[0]; // Adjust index if you want different days
+    const forecastDay = weatherData.forecast.forecastday[0];
     const condition = forecastDay.day.condition.text;
     const temperature = forecastDay.day.avgtemp_c;
 
     // Create a prompt based on the weather information
-    const prompt = `Provide a short recommendayions for Malawian Farmers today based on the weather forecast for ${location}. The forecast for today is ${condition} with an average temperature of ${temperature}°C. Follow some sample examples like these but you can add your own word and any extra things, Based on today's weather, make sure you do. Or its  Normal farm activies may continue or preceed if, or say ita good day to do a specific activity, or ot will rain heavily no need for irrigation. `;
+    const prompt = `Provide a short recommendation for Malawian farmers today based on the weather forecast for ${location}. The forecast for today is ${condition} with an average temperature of ${temperature}°C.`;
 
     // Generate recommendations using the AI service
     const recommendations = await generateText(prompt);
