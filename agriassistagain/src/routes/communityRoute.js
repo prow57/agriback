@@ -7,7 +7,7 @@ const { generateText } = require('../services/llamaAIService');
 // AI content generation function using llamaAIService
 async function generateAIContent(topic) {
   try {
-    const prompt = `Generate detailed content about ${topic} in the context of agriculture.`;
+    const prompt = `Generate detailed content about ${topic} in the context of agriculture in Malawi.`;
     const aiContent = await generateText(prompt);
 
     // Corrected: Use backticks for template literals
